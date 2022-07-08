@@ -1,25 +1,34 @@
 import React from "react";
 
 
+
 class AddUser extends React.Component {
     constructor(props){
         super(props)
         this.state = {
             email: "",
-            password: "",
-            teacher: false
+            role: "",
         }
     }
+
+    ButtonPressed = () => {
+        // let email = this.state.email;
+        // let role = this.state.role;
+        console.log("Done")
+        console.log(this.state.email)    
+    }
+
     render(){
         return(
             <form>
-                <input placeholder="email" onChange={(event => this.setState({email: event.target.value}))} />
-                <input placeholder="password" onChange={(event => this.setState({password: event.target.value}))}/>
+                <input placeholder={this.props.textOne} onChange={(event => this.setState({email: event.target.value}))} key = "BoxOne"/>
+                <input placeholder={this.props.textTwo} onChange={(event => this.setState({role: event.target.value}))} key = "BoxTwo"/>
     
-                <button type="button">Register</button>
+                <button type="button" onClick={this.ButtonPressed}> Register </button>
             </form>
     )
   }  
 }
+
 
 export default AddUser
