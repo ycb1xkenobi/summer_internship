@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+  <div class = "center">
+      {% if current_user.is_authenticated %}
+        {% if current_user.role == 'Студент' %}
+            <form method="POST" enctype="multipart/form-data">
+            <input type="file" name="file"
+            <td><input type="submit" value="Submit"></td>
+                {% else %}
+                    <meta http-equiv="refresh" content="0;URL=/">
+                {% endif %}
+                {% endif %}
+    </form>
+  </div>
+</body>
+</html>

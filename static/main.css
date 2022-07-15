@@ -1,3 +1,91 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;600&display=swap');
+.student-buttons{
+    align-items: center;
+    padding: 100px;
+}
+
+
+.content{
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    margin: auto;
+    color: red;
+}
+.test {
+        position: absolute;
+        top: 50%;
+        height: 240px;
+        margin-top: -120px;
+}
+
+.box-center{
+    height: 100%;
+    width: 100%;
+    position: relative;
+}
+
+
+.left-bar{
+    position:absolute;
+    width: 11%;
+    height: 90%;
+    margin-left: 20px;
+    margin-right: 90%;
+    border: 1px solid black;
+    padding: 10px;
+    display: block;
+    align-content: space-between;
+    text-align: center;
+    background-color: rgba(230, 253, 253, 0.671);
+}
+
+.left-bar div{
+    text-align: center;
+    align-content: space-between;
+    margin-bottom: 100px;
+    transform: translate(0, 50%);
+}
+
+.left-bar div:not([id="submit-button"]){
+    border-bottom: 1px solid black;
+    padding-bottom: 50px;
+}
+
+.middle-bar{
+    position: absolute;
+    margin-left: 13%;
+    width: 65%;
+    height: 90%;
+    border: 1px solid black;
+    background-color: rgba(230, 253, 253, 0.671);
+    overflow-y: scroll;
+}
+
+.middle-bar .title{
+    margin: 20px;
+    border: 1px solid rgba(0, 0, 0, 0.425);
+    text-align: center;
+}
+
+.middle-bar .title [id="title"]{
+    color: black;
+    margin: 5px;
+
+}
+
+.middle-bar .task-text{
+    padding: 40px 60px;
+}
+
+.middle-bar .image{
+    align-content:space-between;
+    margin: 20px 50px;
+}
+
+.middle-bar .answer {
+    margin: 20px 50px;
+}
 body {
   background: #fafafa;
   color: #333333;
