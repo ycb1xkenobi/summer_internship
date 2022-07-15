@@ -192,7 +192,7 @@ def login():
 @app.after_request
 def redirect_to_signin(response):
     if response.status_code == 401:
-        return redirect(url_for('login_page') + '?next=' + request.url)
+        return redirect(url_for('login') + '?next=' + request.url)
 
     return response
 
