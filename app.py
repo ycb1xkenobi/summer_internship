@@ -154,10 +154,13 @@ def uploadtask():
             filetype = file.filename.split('.')
             filetype = filetype[1]
             if filetype in app.config['ALLOWED_EXTENSIONS']:
-                upload = Tasks(filename=file.filename, data=file.read(), mark='-', status='1', date='-', text='-',
-                           answer='-', fromuser=current_user.name + current_user.surname, touser='-')
-                db.session.add(upload)
-                db.session.commit()
+                if current_user.name == '-' or current_user.surname == '-':
+                    return 'Измените имя и фамилию в профиле'
+                else:
+                    upload = Tasks(filename=file.filename, data=file.read(), mark='-', status='1', date='-', text='-',
+                           answer='-', fromuser=current_user.name + ' ' + current_user.surname, touser='-')
+                    db.session.add(upload)
+                    db.session.commit()
                 return f'Добавлено: {file.filename}'
             else:
                 return 'Неверный формат файла'
