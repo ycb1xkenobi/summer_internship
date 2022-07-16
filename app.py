@@ -31,7 +31,7 @@ class Users(db.Model, UserMixin):
     password = db.Column(db.String(255), nullable=False)
     role = db.Column(db.String(20), nullable=False)
     name = db.Column(db.String(20), nullable=False)
-    surname = db.Column(db.String(20),nullable=False)
+    surname = db.Column(db.String(20), nullable=False)
     image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
 
 
@@ -138,6 +138,13 @@ def account():
                            image_file=image_file, form=form)
 
 
+@app.route("/account/<id>", methods=['GET', 'POST'])
+@login_required
+def watch_profiles(id):
+    user = Users.query.filter_by(id=id).first()
+    return render_template('profile.html', user=user)
+
+
 @app.route('/student', methods=['GET', 'POST'])
 @login_required
 def student():
@@ -158,14 +165,14 @@ def uploadtask():
                     return 'Измените имя и фамилию в профиле'
                 else:
                     upload = Tasks(filename=file.filename, data=file.read(), mark='-', status='1', date='-', text='-',
-                           answer='-', fromuser=current_user.name + ' ' + current_user.surname, touser='-')
+                                   answer='-', fromuser=current_user.name + ' ' + current_user.surname, touser='-')
                     db.session.add(upload)
                     db.session.commit()
                 return f'Добавлено: {file.filename}'
             else:
                 return 'Неверный формат файла'
         except RequestEntityTooLarge:
-            return('Файл слишком большой')
+            return ('Файл слишком большой')
 
     return render_template('uploadtask.html')
 
