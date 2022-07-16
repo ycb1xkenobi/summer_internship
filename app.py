@@ -42,6 +42,8 @@ class Tasks(db.Model):
     date = db.Column(db.String(30), nullable=False)
     text = db.Column(db.Text(2000), nullable=False)
     answer = db.Column(db.Text(1000), nullable=False)
+    fromuser = db.Column(db.String(100), nullable=False)
+    touser = db.Column(db.String(100), nullable=False)
 
 
 # status 0 - выполненые 1 - бессрочные 2 - срочные 3 - закрепленные
@@ -150,7 +152,7 @@ def uploadtask():
         filetype = filetype[1]
         if filetype in types:
             upload = Tasks(filename=file.filename, data=file.read(), mark='-', status='1', date='-', text='-',
-                           answer='-')
+                           answer='-', fromuser=current_user.name + current_user.surname, touser='-')
             db.session.add(upload)
             db.session.commit()
             return f'Добавлено: {file.filename}'
