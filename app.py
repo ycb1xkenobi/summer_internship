@@ -7,6 +7,7 @@ from flask_wtf import FlaskForm
 from flask_wtf.file import FileField
 from wtforms import PasswordField, StringField, BooleanField, SubmitField, form
 from wtforms.validators import ValidationError
+from werkzeug.exceptions import RequestEntityTooLarge
 
 from passwords import create_password
 from save_picture import save_picture
@@ -16,11 +17,12 @@ app.secret_key = 'ABC123'
 app.config['FLASK_ENV'] = 'development'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['ROLES'] = ['Студент', 'Преподаватель', 'Админ']
+app.config['ALLOWED_EXTENSIONS'] = ['zip', 'rar', 'jpg', 'jpeg' 'png', 'txt']
+app.config['MAX_CONTENT_LENGTH'] = 1 * 1024 * 1024  # 1MB
+
 db = SQLAlchemy(app)
 manager = LoginManager(app)
-
-roles = ['Студент', 'Преподаватель', 'Не зарегистрирован', 'Админ']
-types = ['zip', 'rar', 'jpg', 'png', 'txt']
 
 
 class Users(db.Model, UserMixin):
@@ -65,7 +67,7 @@ class UpdateAccountForm(FlaskForm):
         if email.data != current_user.email:
             user = Users.query.filter_by(email=email.data).first()
             if user:
-                raise ValidationError('That email is taken. Please choose a different one.')
+                raise ValidationError('Эта почта занята, выберите другую')
 
 
 class RegisterPage(BaseView):
@@ -96,7 +98,7 @@ def register():
         password = create_password()
         userinfo = Users(id=id, email=email, password=password, role=role, name='-', surname='-')
         try:
-            if role in roles:
+            if role in app.config['ROLES']:
                 if '@' in email:
                     db.session.add(userinfo)
                     db.session.commit()
@@ -146,18 +148,22 @@ def student():
 @login_required
 def uploadtask():
     if request.method == 'POST':
-        file = request.files['file']
+        try:
+            file = request.files['file']
 
-        filetype = file.filename.split('.')
-        filetype = filetype[1]
-        if filetype in types:
-            upload = Tasks(filename=file.filename, data=file.read(), mark='-', status='1', date='-', text='-',
+            filetype = file.filename.split('.')
+            filetype = filetype[1]
+            if filetype in app.config['ALLOWED_EXTENSIONS']:
+                upload = Tasks(filename=file.filename, data=file.read(), mark='-', status='1', date='-', text='-',
                            answer='-', fromuser=current_user.name + current_user.surname, touser='-')
-            db.session.add(upload)
-            db.session.commit()
-            return f'Добавлено: {file.filename}'
-        else:
-            return 'Неверный формат файла'
+                db.session.add(upload)
+                db.session.commit()
+                return f'Добавлено: {file.filename}'
+            else:
+                return 'Неверный формат файла'
+        except RequestEntityTooLarge:
+            return('Файл слишком большой')
+
     return render_template('uploadtask.html')
 
 
@@ -172,6 +178,7 @@ def teacher():
 def logout():
     logout_user()
     return redirect('/')
+
 
 @app.route("/login", methods=['GET', 'POST'])
 def login():
