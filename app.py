@@ -41,7 +41,7 @@ class Tasks(db.Model):
     data = db.Column(db.LargeBinary)
     mark = db.Column(db.String(2), nullable=False)
     status = db.Column(db.String(30), nullable=False)
-    date = db.Column(db.String(30), nullable=False)
+    date = db.Column(db.String(30))
     text = db.Column(db.Text(2000), nullable=False)
     answer = db.Column(db.Text(1000), nullable=False)
     fromuser = db.Column(db.String(100), nullable=False)
@@ -142,7 +142,8 @@ def account():
 @login_required
 def watch_profiles(id):
     user = Users.query.filter_by(id=id).first()
-    return render_template('profile.html', user=user)
+    image_file = url_for('static', filename='profile_pics/' + user.image_file)
+    return render_template('profile.html', user=user, image_file=image_file)
 
 
 @app.route('/student', methods=['GET', 'POST'])
