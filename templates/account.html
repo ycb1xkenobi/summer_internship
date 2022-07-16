@@ -9,6 +9,8 @@
             <h2 class="account-heading">{{ current_user.surname }}</h2>
             <p class="text-secondary">{{ current_user.email }}</p>
             <p class="text-secondary">{{ current_user.role }}</p>
+            <p class="text-secondary">Группа: {{ current_user.group }}</p>
+            <p class="text-secondary">Год поступления: {{ current_user.yearadmission }}</p>
             <p class="text-secondary">Айди: {{ current_user.id }}</p>
         </div>
       </div>
@@ -55,6 +57,34 @@
                         </div>
                     {% else %}
                         {{ form.email(class="form-control form-control-lg") }}
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    {{ form.group.label(class="form-control-label") }}
+
+                    {% if form.group.errors %}
+                        {{ form.group(class="form-control form-control-lg is-invalid") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.group.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.group(class="form-control form-control-lg") }}
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    {{ form.yearadmission.label(class="form-control-label") }}
+
+                    {% if form.yearadmission.errors %}
+                        {{ form.yearadmission(class="form-control form-control-lg is-invalid") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.yearadmission.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.yearadmission(class="form-control form-control-lg") }}
                     {% endif %}
                 </div>
                 <div class="form-group">

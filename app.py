@@ -33,6 +33,8 @@ class Users(db.Model, UserMixin):
     name = db.Column(db.String(20), nullable=False)
     surname = db.Column(db.String(20), nullable=False)
     image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
+    group = db.Column(db.String(100), nullable=False)
+    yearadmission = db.Column(db.String(100), nullable=False)
 
 
 class Tasks(db.Model):
@@ -61,6 +63,8 @@ class UpdateAccountForm(FlaskForm):
     surname = StringField('Фамилия')
     email = StringField('Электронная почта')
     picture = FileField('Обновить фотографию')
+    group = StringField('Группа')
+    yearadmission = StringField('Год поступления')
     submit = SubmitField('Обновить')
 
     def validate_email(self, email):
@@ -96,7 +100,7 @@ def register():
         role = request.form['role']
         id = db.session.query(Users).count() + 1
         password = create_password()
-        userinfo = Users(id=id, email=email, password=password, role=role, name='-', surname='-')
+        userinfo = Users(id=id, email=email, password=password, role=role, name='-', surname='-', yearadmission='-', group = '-')
         try:
             if role in app.config['ROLES']:
                 if '@' in email:
@@ -125,6 +129,8 @@ def account():
         current_user.name = form.name.data
         current_user.surname = form.surname.data
         current_user.email = form.email.data
+        current_user.group = form.group.data
+        current_user.yearadmission = form.yearadmission.data
         db.session.commit()
         flash('Вы обновили свой аккаунт!', 'Поздравляем')
         return redirect('/account')
@@ -132,6 +138,8 @@ def account():
         form.name.data = current_user.name
         form.surname.data = current_user.surname
         form.email.data = current_user.email
+        form.group.data = current_user.group
+        form.yearadmission.data = current_user.yearadmission
 
     image_file = url_for('static', filename='profile_pics/' + current_user.image_file)
     return render_template('account.html', title='Account',
@@ -162,8 +170,8 @@ def uploadtask():
             filetype = file.filename.split('.')
             filetype = filetype[1]
             if filetype in app.config['ALLOWED_EXTENSIONS']:
-                if current_user.name == '-' or current_user.surname == '-':
-                    return 'Измените имя и фамилию в профиле'
+                if current_user.name == '-' or current_user.surname == '-' or current_user.group == '-' or current_user.yearadmission == '-':
+                    return 'Измените профиль, добавьте информацию о себе'
                 else:
                     upload = Tasks(filename=file.filename, data=file.read(), mark='-', status='1', date='-', text='-',
                                    answer='-', fromuser=current_user.name + ' ' + current_user.surname, touser='-')
@@ -205,7 +213,7 @@ def login():
             next_page = request.args.get('next')
             return redirect(next_page) if next_page else redirect('/')
         else:
-            flash('Login Unsuccessful. Please check email and password', 'danger')
+            flash('Неудачный вход', 'danger')
     return render_template('login.html', title='Login', form=form)
 
 
