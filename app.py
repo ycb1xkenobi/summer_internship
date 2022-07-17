@@ -101,21 +101,17 @@ def register():
         role = request.form['role']
         id = db.session.query(Users).count() + 1
         password = create_password()
-        userinfo = Users(id=id, email=email, password=password, role=role, name='-', surname='-', yearadmission='-', group = '-')
+        userinfo = Users(id=id, email=email, password=password, role=role, name='-', surname='-', yearadmission='-',
+                         group='-')
         try:
             if role in app.config['ROLES']:
                 if '@' in email:
                     db.session.add(userinfo)
                     db.session.commit()
                     return redirect('/admin/users')
-                else:
-                    return ('Проверьте правильность написания почты')
-            else:
-                return ('Проверьте правильность написания роли')
         except:
-            return ('Произошла ошибка при добавлении пользователя')
-    else:
-        return render_template("register.html")
+            return 'Произошла ошибка при добавлении пользователя'
+    return render_template("register.html")
 
 
 @app.route("/account", methods=['GET', 'POST'])
@@ -172,18 +168,18 @@ def uploadtask():
             filetype = filetype[1]
             if filetype in app.config['ALLOWED_EXTENSIONS']:
                 if current_user.name == '-' or current_user.surname == '-' or current_user.group == '-' or current_user.yearadmission == '-':
-                    return 'Измените профиль, добавьте информацию о себе'
+                    flash('Измените профиль, добавьте информацию о себе', 'danger')
                 else:
                     upload = Tasks(filename=file.filename, data=file.read(), mark='-', status='1', date='-', text='-',
                                    answer='-', fromuser=current_user.name + ' ' + current_user.surname, touser='-',
                                    header='-')
                     db.session.add(upload)
                     db.session.commit()
-                return f'Добавлено: {file.filename}'
+                flash(f'Добавлено: {file.filename}')
             else:
-                return 'Неверный формат файла'
+                flash('Неверный формат файла', 'danger')
         except RequestEntityTooLarge:
-            return ('Файл слишком большой')
+            flash('Файл слишком большой', 'danger')
 
     return render_template('uploadtask.html')
 
