@@ -39,8 +39,9 @@ class Users(db.Model, UserMixin):
 
 class Tasks(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    filename = db.Column(db.String(50))
-    data = db.Column(db.LargeBinary)
+    header = db.Column(db.String(100), nullable=False)
+    filename = db.Column(db.String)
+    data = db.Column(db.Text)
     mark = db.Column(db.String(2), nullable=False)
     status = db.Column(db.String(30), nullable=False)
     date = db.Column(db.String(30))
@@ -174,7 +175,8 @@ def uploadtask():
                     return 'Измените профиль, добавьте информацию о себе'
                 else:
                     upload = Tasks(filename=file.filename, data=file.read(), mark='-', status='1', date='-', text='-',
-                                   answer='-', fromuser=current_user.name + ' ' + current_user.surname, touser='-')
+                                   answer='-', fromuser=current_user.name + ' ' + current_user.surname, touser='-',
+                                   header='-')
                     db.session.add(upload)
                     db.session.commit()
                 return f'Добавлено: {file.filename}'
@@ -186,10 +188,12 @@ def uploadtask():
     return render_template('uploadtask.html')
 
 
-@app.route('/teacher', methods=['GET', 'POST'])
+@app.route('/teacher/<id>', methods=['GET', 'POST'])
 @login_required
-def teacher():
-    return render_template("teacher.html")
+def teacher_check_task(id):
+    user = Users.query.filter_by(id=id).first()
+    task_all = Tasks.query.filter_by(touser=user.email)
+    return render_template('teacher_check_task.html', tasks=task_all, user=user)
 
 
 @app.route('/logout', methods=['GET', 'POST'])
