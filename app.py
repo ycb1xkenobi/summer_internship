@@ -5,7 +5,7 @@ from flask_login import LoginManager, login_user, login_required, logout_user, U
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField
-from wtforms import PasswordField, StringField, BooleanField, SubmitField, TextAreaField
+from wtforms import PasswordField, StringField, BooleanField, SubmitField, TextAreaField, SelectField
 from wtforms.validators import ValidationError
 from werkzeug.exceptions import RequestEntityTooLarge
 
@@ -160,15 +160,9 @@ def student():
     return render_template("student.html")
 
 
-@app.route('/student/upload',  methods=['GET', 'POST'])
+@app.route('/student/upload', methods=['GET', 'POST'])
 @login_required
-def check_status():
-    return render_template('uploadtask.html')
-
-
-@app.route('/student/upload/<status>', methods=['GET', 'POST'])
-@login_required
-def uploadtask(status):
+def uploadtask():
     form = AddTask()
     if form.validate_on_submit():
         file = request.files['file']
@@ -181,6 +175,7 @@ def uploadtask(status):
         header = form.header_field.data
         date = form.date_field.data
         touser = form.touser_field.data
+        status = request.form.get('select')
         try:
             user = Users.query.filter_by(email=touser).first()
             if user:
@@ -209,7 +204,7 @@ def uploadtask(status):
                 flash('Такого пользователя не существует', 'danger')
         except RequestEntityTooLarge:
             flash('Размер файла слишком большой', 'danger')
-    return render_template('addtask.html', form=form)
+    return render_template('addtask.html', form=form, statuses=[{'name':'Задание без срока'}, {'name':'Задание со сроком'}])
 
 
 @app.route('/teacher/<id>', methods=['GET', 'POST'])

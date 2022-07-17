@@ -20,10 +20,16 @@
                     {{ form.date_field.label(class="form-control-label") }}
                         {{ form.date_field(class="form-control form-control-lg") }}
                 </div>
-                </fieldset>
+                    <span class="input-group-addon">Выберите тип:</span>
+                    <select class="form-control" id="continent_selector" name="select">
+                        <option value="1">Задание без срока</option>
+                        <option value="2">Задание со сроком</option>
+                    </select>
+            </div>
             <div class = "center">
                 <input type="file" name="file">
-                </div>
+            </div>
+            </fieldset>
             <h1></h1>
                 <div class="form-group">
                     {{ form.submit(class="btn btn-outline-info") }}
