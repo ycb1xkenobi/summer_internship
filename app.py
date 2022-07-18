@@ -171,7 +171,7 @@ def changepassword():
     return render_template('changepassword.html', form=form)
 
 
-@app.route("/account/<id>", methods=['GET', 'POST'])
+@app.route("/account/<id_profile>", methods=['GET', 'POST'])
 @login_required
 def watch_profiles(id_profile):
     user = Users.query.filter_by(id=id_profile).first()
@@ -242,7 +242,7 @@ def upload_task():
                            statuses=[{'name': 'Задание без срока'}, {'name': 'Задание со сроком'}])
 
 
-@app.route('/teacher/<id>', methods=['GET', 'POST'])
+@app.route('/teacher/<id_teacher>', methods=['GET', 'POST'])
 @login_required
 def teacher_check_task(id_teacher):
     user = Users.query.filter_by(id=id_teacher).first()
