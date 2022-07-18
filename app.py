@@ -8,6 +8,7 @@ from flask_wtf.file import FileField
 from wtforms import PasswordField, StringField, BooleanField, SubmitField
 from wtforms.validators import ValidationError
 from werkzeug.exceptions import RequestEntityTooLarge
+from werkzeug.security import check_password_hash, generate_password_hash
 
 from passwords import create_password
 from save_picture import save_picture
@@ -118,7 +119,8 @@ def register():
     if form.validate_on_submit():
         email = request.form.get('email')
         role = request.form.get('select')
-        password = create_password()
+        non_hashed_password = create_password()
+        password = generate_password_hash(non_hashed_password)
         userinfo = Users(email=email, password=password, role=role, name='-', surname='-', yearadmission='-',
                          group='-')
         if role in app.config['ROLES']:
@@ -129,7 +131,7 @@ def register():
                 if '@' in email:
                     db.session.add(userinfo)
                     db.session.commit()
-                    flash(f'Пароль {password} для пользователя {email}')
+                    flash(f'Пароль {non_hashed_password} для пользователя {email}, сменить почту можно только в личном кабинете!')
                 else:
                     flash('Это не почта!', 'danger')
         else:
@@ -187,7 +189,9 @@ def changepassword():
     form = ChangePassword()
     if form.validate_on_submit():
         if form.password1.data == form.password2.data:
-            current_user.password = form.password1.data
+            non_hashed_password = form.password1.data
+            password = generate_password_hash(non_hashed_password)
+            current_user.password = password
             db.session.commit()
             flash('Пароль обновлен')
         else:
@@ -299,12 +303,15 @@ def login():
     form = LoginForm()
 
     if form.validate_on_submit():
-        user = Users.query.filter_by(email=form.email.data).first()
-        password = Users.query.filter_by(password=form.password.data).first()
-        if user and password:
-            login_user(user, remember=form.remember.data)
-            next_page = request.args.get('next')
-            return redirect(next_page) if next_page else redirect('/')
+        email = request.form.get('email')
+        password = request.form.get('password')
+
+        if email and password:
+            user = Users.query.filter_by(email=form.email.data).first()
+            if check_password_hash(user.password, password):
+                login_user(user, remember=form.remember.data)
+                next_page = request.args.get('next')
+                return redirect(next_page) if next_page else redirect('/')
         else:
             flash('Неудачный вход', 'danger')
     return render_template('login.html', title='Login', form=form)
