@@ -1,9 +1,18 @@
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;600&display=swap');
 .student-buttons{
+    padding: 20px;
     align-items: center;
-    padding: 100px;
+    align-content: stretch;
+    align-items: stretch;
+    margin-left: 30%;
 }
 
+.student-buttons input[type="submit"]{
+    width: 45%;
+    height: 85%;
+    opacity: 80%;
+    margin: 10px;
+}
 
 .content{
     position: absolute;
@@ -165,4 +174,9 @@ a.article-title:hover {
 
 .account-heading {
   font-size: 2.5rem;
+}
+.flash {padding: 10px;}
+.flash.success {
+    border: 1px solid #21DB56;
+    background: #AEFFC5;
 }

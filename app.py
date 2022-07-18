@@ -137,7 +137,7 @@ def register():
                 if '@' in email:
                     db.session.add(userinfo)
                     db.session.commit()
-                    flash(f'Пароль {non_hashed_password} для пользователя {email}, сменить почту можно только в личном кабинете!')
+                    flash(f'Пароль {non_hashed_password} для пользователя {email}, сменить почту можно только в личном кабинете!', 'success')
                 else:
                     flash('Это не почта!', 'danger')
         else:
@@ -175,7 +175,7 @@ def account():
         current_user.group = form.group.data
         current_user.yearadmission = form.yearadmission.data
         db.session.commit()
-        flash('Вы обновили свой аккаунт!', 'Поздравляем')
+        flash('Вы обновили свой аккаунт!', 'success')
         return redirect('/account')
     elif request.method == 'GET':
         form.name.data = current_user.name
@@ -199,7 +199,7 @@ def changepassword():
             password = generate_password_hash(non_hashed_password)
             current_user.password = password
             db.session.commit()
-            flash('Пароль обновлен')
+            flash('Пароль обновлен', 'success')
         else:
             flash('Пароли не совпадают', 'danger')
     return render_template('changepassword.html', form=form)
@@ -259,7 +259,7 @@ def upload_task():
                                                    fromuserid=current_user.id)
                                     db.session.add(upload)
                                     db.session.commit()
-                                    flash(f'Добавлено')
+                                    flash(f'Добавлено', 'success')
                             else:
                                 flash('Неверный формат файла', 'danger')
                         else:
