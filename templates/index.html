@@ -3,7 +3,7 @@
         {% if current_user.role == 'Студент' %}
             <meta http-equiv="refresh" content="0;URL=/student" />
         {% elif current_user.role == 'Преподаватель' %}
-            <meta http-equiv="refresh" content="0;URL=/teacher/{{current_user.id}}" />
+            <meta http-equiv="refresh" content="0;URL=/teacher" />
         {%endif%}
     {% else %}
         <meta http-equiv="refresh" content="0;URL=/login" />

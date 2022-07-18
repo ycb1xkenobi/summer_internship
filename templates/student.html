@@ -5,7 +5,7 @@
         {% if current_user.role == 'Студент' %}
             <div class="student-buttons">
                 <a href="/student/upload"><input type="submit" value="Задать новое задание"></a>
-                <a href="/"><input type="submit" value="Посмотреть отправленные задания"></a>
+                <a href="/student/uploads/{{current_user.id}}"><input type="submit" value="Посмотреть отправленные задания"></a>
             </div>
         {% else %}
             <meta http-equiv="refresh" content="0;URL=/"/>

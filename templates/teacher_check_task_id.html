@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+{% if current_user.is_authenticated %}
+    {% if current_user.role == 'Преподаватель' %}
+        {% if current_user.email == task.touser %}
+            <h1>{{task.header}}</h1>
+            <h2>{{task.text}}</h2>
+            <h3>{{task.fromuser}}</h3>
+        {%else%}
+            <meta http-equiv="refresh" content="0;URL=/"/>
+        {% endif %}
+    {%else%}
+        <meta http-equiv="refresh" content="0;URL=/"/>
+{%endif%}
+{% endif %}
+{% endblock content %}

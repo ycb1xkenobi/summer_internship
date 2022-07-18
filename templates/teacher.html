@@ -1,10 +1,14 @@
+<link rel="stylesheet" href="../static/main.css">
 {% extends "base.html" %}
 {% block content %}
-{% if current_user.is_authenticated %}
-    {% if current_user.role == 'Преподаватель' %}
-        <h1>Teacher</h1>
-    {% else %}
-        <meta http-equiv="refresh" content="0;URL=/"/>
+    {% if current_user.is_authenticated %}
+        {% if current_user.role == 'Преподаватель' %}
+            <div class="student-buttons">
+                <a href="/teacher/{{current_user.id}}"><input type="submit" value="Оценить задания"></a>
+                <a href="/"><input type="submit" value="Оцененные задания"></a>
+            </div>
+        {% else %}
+            <meta http-equiv="refresh" content="0;URL=/"/>
     {% endif %}
     {% endif %}
 {% endblock content %}

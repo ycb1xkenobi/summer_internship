@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+{% if current_user.is_authenticated %}
+    {% if current_user.role == 'Студент' %}
+        {% if current_user.id != id %}
+            <meta http-equiv="refresh" content="0;URL=/"/>
+        {% else %}
+            {% for task in uploaded %}
+                    <h2>Айди задания {{ task.id }} {{ task.text }} от {{task.fromuser}}</h2>
+            {% endfor %}
+        {% endif %}
+    {% else %}
+        <meta http-equiv="refresh" content="0;URL=/"/>
+    {% endif %}
+    {% endif %}
+{% endblock content %}

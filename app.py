@@ -52,7 +52,7 @@ class Tasks(db.Model):
     touser = db.Column(db.String(100), nullable=False)
 
 
-# status 0 - выполненые 1 - бессрочные 2 - срочные 3 - закрепленные
+# status 0 - выполненые 1 - бессрочные 2 - срочные 3 - закрепленные 4 - просмотрено(оценено)
 
 
 class LoginForm(FlaskForm):
@@ -126,6 +126,21 @@ def register():
         else:
             flash('Такой роли не существует', 'danger')
     return render_template("register.html")
+
+
+@app.route("/teacher/checktask/<task_id>")
+@login_required
+def teacher_check_task_id(task_id):
+    task_id = int(task_id)
+    checked_task = Tasks.query.filter_by(id=task_id).first()
+    return render_template('teacher_check_task_id.html', task=checked_task)
+
+@app.route("/student/checktask/<task_id>")
+@login_required
+def student_check_task_id(task_id):
+    check_my_id = current_user.id
+    checked_task = Tasks.query.filter_by(id=task_id).first()
+    return render_template('student_check_task_id.html', task=checked_task, id=str(check_my_id))
 
 
 @app.route("/account", methods=['GET', 'POST'])
@@ -240,6 +255,19 @@ def upload_task():
             flash('Размер файла слишком большой', 'danger')
     return render_template('addtask.html', form=form,
                            statuses=[{'name': 'Задание без срока'}, {'name': 'Задание со сроком'}])
+
+
+@app.route('/student/uploads/<id_student>')
+@login_required
+def check_my_upload_task(id_student):
+    uploaded_task = Tasks.query.filter_by(fromuserid=str(current_user.id))
+    return render_template('student_all_tasks.html', id=int(id_student), uploaded=uploaded_task)
+
+
+@app.route('/teacher')
+@login_required
+def teacher():
+    return render_template('teacher.html')
 
 
 @app.route('/teacher/<id_teacher>', methods=['GET', 'POST'])
