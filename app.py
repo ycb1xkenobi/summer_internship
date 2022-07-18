@@ -1,5 +1,5 @@
 from flask import Flask, render_template, url_for, request, redirect, flash
-from flask_admin import Admin, BaseView, expose
+from flask_admin import Admin, BaseView, expose, AdminIndexView
 from flask_admin.contrib.sqla import ModelView
 from flask_login import LoginManager, login_user, login_required, logout_user, UserMixin, current_user
 from flask_sqlalchemy import SQLAlchemy
@@ -105,6 +105,12 @@ class RegisterPage(BaseView):
     @expose('/')
     def any_page(self):
         return render_template('register.html')
+
+
+class DashboardView(AdminIndexView):
+    @expose('/')
+    def index(self):
+        return self.render('admin/dashboard_index.html')
 
 
 @app.route('/')
@@ -330,7 +336,7 @@ def load_user(user_id):
     return Users.query.get(user_id)  # id = db.session.query(Users).count() + 1
 
 
-admin = Admin(app, 'Админ панель', template_mode='bootstrap3')
+admin = Admin(app, 'Админ панель', template_mode='bootstrap3', index_view=DashboardView(), endpoint='admin')
 admin.add_view(ModelView(Users, db.session, name='Пользователи'))
 admin.add_view(ModelView(Tasks, db.session, name='Задания'))
 admin.add_view(RegisterPage(name='Регистрация пользователей'))
