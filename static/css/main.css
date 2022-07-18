@@ -1,8 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;600&display=swap');
 
-h2{
-    color: rgb(0, 38, 255);
+
+.student-buttons{
+    align-items: center;
+    padding: 100px;
 }
+
 
 .content{
     position: absolute;
@@ -24,23 +27,14 @@ h2{
     position: relative;
 }
 
-.box-child{
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    border: 5px solid rgb(157, 157, 255);
-    padding: 100px;
-    display: flex; 
-    flex-direction: column;
-    justify-content: space-between;
-}
 
 .left-bar{
-    width: 12%;
+    position:absolute;
+    width: 11%;
+    height: 90%;
     margin-left: 20px;
     margin-right: 90%;
-    border: 5px solid black;
+    border: 1px solid black;
     padding: 10px;
     display: block;
     align-content: space-between;
@@ -55,18 +49,82 @@ h2{
     transform: translate(0, 50%);
 }
 
-.left-bar div:not([id="submit"]){
-    border-bottom: 2px solid black;
+.left-bar div:not([id="submit-button"]){
+    border-bottom: 1px solid black;
     padding-bottom: 50px;
 }
 
-.left-bar div #radio-button{
-    padding: 5px;
-
+.left-bar .dates input[name="term"]{
+    padding: 10px 10px;
+    margin: 10px 20px;
+    width: 80%;
 }
 
 .middle-bar{
-    margin: 200px;
-    border: 2px solid black;
-    background-color: blueviolet;
+    position: absolute;
+    margin-left: 13%;
+    width: 65%;
+    height: 90%;
+    border: 1px solid black;
+    background-color: rgba(230, 253, 253, 0.671);
+    overflow-y: scroll;
+}
+
+.middle-bar .title{
+    margin: 20px;
+    border: 1px solid rgba(0, 0, 0, 0.425);
+    text-align: center;
+}
+
+.middle-bar .title [id="title"]{
+    color: black;
+    margin: 5px;
+    background-color: white;
+}
+
+.middle-bar .task-text{
+    padding: 40px 60px;
+}
+
+.middle-bar .image{
+    align-content:space-between;
+    margin: 20px 50px;
+}
+
+.middle-bar .answer {
+    margin: 20px 50px;
+}
+
+.right-bar {
+    position: absolute;
+    margin-left: 79%;
+    width: 19%;
+    height: 90%;
+    border: 1px solid black;
+    background-color: rgba(230, 253, 253, 0.671);
+    overflow-y: scroll;
+}
+
+.right-bar .message {
+    align-items: flex-end;
+    margin: 10px;
+    margin-left: 50px;
+    padding: 8px;
+    background-color: white;
+    border: 1px dotted black;
+}
+
+.middle-bar .task-text-input{
+    margin-left: 30px;
+}
+
+.middle-bar .file-input{
+    margin: 50px;
+    margin-left: 40%;
+}
+
+.middle-bar input[id="send-button"]{
+    margin: 50px;
+    margin-left:45%;
+
 }

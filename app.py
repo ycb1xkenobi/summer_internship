@@ -63,7 +63,6 @@ class LoginForm(FlaskForm):
 
 class AddTask(FlaskForm):
     touser_field = StringField('Почта преподавателя')
-    text_field = TextAreaField('Текст сообщения')
     date_field = StringField('Дата окончания')
     header_field = StringField('Заголовок')
     submit = SubmitField('Отправить')
@@ -171,7 +170,7 @@ def uploadtask():
             filetype = filetype[1]
         else:
             filetype = 'txt'
-        text = form.text_field.data
+        text = request.form.get('text_field')
         header = form.header_field.data
         date = form.date_field.data
         touser = form.touser_field.data
