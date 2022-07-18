@@ -2,25 +2,30 @@
 {% block content %}
 {% if current_user.is_authenticated %}
     {% if current_user.role == 'Преподаватель' %}
-        <h1>Проверка</h1>
-        <h2>Бессрочные</h2>
-        {% for task in tasks %}
-            {% if task.status == '1' %}
-                <h2>Айди задания {{ task.id }} {{ task.text }} от {{task.fromuser}}</h2>
-            {%endif%}
-        {%endfor%}
-        <h2>Со сроком</h2>
-        {% for task in tasks %}
-            {% if task.status == '2' %}
-                <h2>Айди задания {{ task.id }} {{ task.text }} от {{task.fromuser}}</h2>
-            {%endif%}
-        {%endfor%}
-        <h2>Закрепленные</h2>
-        {% for task in tasks %}
-            {% if task.status == '3' %}
-                <h2>Айди задания {{ task.id }} {{ task.text }} от {{task.fromuser}}</h2>
-            {%endif%}
-        {%endfor%}
+        {% if current_user.id != id %}
+            <meta http-equiv="refresh" content="0;URL=/"/>
+        {% else %}
+
+            <h1>Проверка</h1>
+            <h2>Бессрочные</h2>
+            {% for task in tasks %}
+                {% if task.status == '1' %}
+                    <h2>Айди задания {{ task.id }} {{ task.text }} от {{task.fromuser}}</h2>
+                {%endif%}
+            {%endfor%}
+            <h2>Со сроком</h2>
+            {% for task in tasks %}
+                {% if task.status == '2' %}
+                    <h2>Айди задания {{ task.id }} {{ task.text }} от {{task.fromuser}}</h2>
+                {%endif%}
+            {%endfor%}
+            <h2>Закрепленные</h2>
+            {% for task in tasks %}
+                {% if task.status == '3' %}
+                    <h2>Айди задания {{ task.id }} {{ task.text }} от {{task.fromuser}}</h2>
+                {%endif%}
+            {%endfor%}
+            {% endif %}
     {% else %}
         <meta http-equiv="refresh" content="0;URL=/"/>
     {% endif %}
