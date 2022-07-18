@@ -5,7 +5,7 @@ from flask_login import LoginManager, login_user, login_required, logout_user, U
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField
-from wtforms import PasswordField, StringField, BooleanField, SubmitField, validators
+from wtforms import PasswordField, StringField, BooleanField, SubmitField
 from wtforms.validators import ValidationError
 from werkzeug.exceptions import RequestEntityTooLarge
 
@@ -68,10 +68,12 @@ class AddTask(FlaskForm):
     header_field = StringField('Заголовок')
     submit = SubmitField('Отправить')
 
+
 class ChangePassword(FlaskForm):
     password1 = PasswordField('Введите новый пароль')
     password2 = PasswordField('Повторите новый пароль')
     submit = SubmitField('Сохранить')
+
 
 class UpdateAccountForm(FlaskForm):
     name = StringField('Имя')
@@ -110,14 +112,19 @@ def register():
         password = create_password()
         userinfo = Users(id=id, email=email, password=password, role=role, name='-', surname='-', yearadmission='-',
                          group='-')
-        try:
-            if role in app.config['ROLES']:
+        if role in app.config['ROLES']:
+            user = Users.query.filter_by(email=email).first()
+            if user:
+                flash('Такой пользователь зарегистрирован', 'danger')
+            else:
                 if '@' in email:
                     db.session.add(userinfo)
                     db.session.commit()
-                    return redirect('/admin/users')
-        except:
-            return 'Произошла ошибка при добавлении пользователя'
+                    flash(f'Пароль {password} для пользователя {email}')
+                else:
+                    flash('Это не почта!', 'danger')
+        else:
+            flash('Такой роли не существует', 'danger')
     return render_template("register.html")
 
 
@@ -166,8 +173,8 @@ def changepassword():
 
 @app.route("/account/<id>", methods=['GET', 'POST'])
 @login_required
-def watch_profiles(id):
-    user = Users.query.filter_by(id=id).first()
+def watch_profiles(id_profile):
+    user = Users.query.filter_by(id=id_profile).first()
     image_file = url_for('static', filename='profile_pics/' + user.image_file)
     return render_template('profile.html', user=user, image_file=image_file)
 
@@ -180,7 +187,7 @@ def student():
 
 @app.route('/student/upload', methods=['GET', 'POST'])
 @login_required
-def uploadtask():
+def upload_task():
     form = AddTask()
     if form.validate_on_submit():
         file = request.files['file']
@@ -210,12 +217,12 @@ def uploadtask():
                                     flash('Измените профиль, добавьте информацию о себе', 'danger')
                                 else:
                                     upload = Tasks(filename=file.filename, data=file.read(), mark='-', status=status,
-                                               date=date,
-                                               text=text,
-                                               answer='-', fromuser=current_user.name + ' ' + current_user.surname,
-                                               touser=touser,
-                                               header=header,
-                                               fromuserid=current_user.id)
+                                                   date=date,
+                                                   text=text,
+                                                   answer='-', fromuser=current_user.name + ' ' + current_user.surname,
+                                                   touser=touser,
+                                                   header=header,
+                                                   fromuserid=current_user.id)
                                     db.session.add(upload)
                                     db.session.commit()
                                     flash(f'Добавлено')
@@ -231,15 +238,16 @@ def uploadtask():
                 flash('Такого пользователя не существует', 'danger')
         except RequestEntityTooLarge:
             flash('Размер файла слишком большой', 'danger')
-    return render_template('addtask.html', form=form, statuses=[{'name':'Задание без срока'}, {'name':'Задание со сроком'}])
+    return render_template('addtask.html', form=form,
+                           statuses=[{'name': 'Задание без срока'}, {'name': 'Задание со сроком'}])
 
 
 @app.route('/teacher/<id>', methods=['GET', 'POST'])
 @login_required
-def teacher_check_task(id):
-    user = Users.query.filter_by(id=id).first()
+def teacher_check_task(id_teacher):
+    user = Users.query.filter_by(id=id_teacher).first()
     task_all = Tasks.query.filter_by(touser=user.email)
-    return render_template('teacher_check_task.html', tasks=task_all, user=user, id=int(id))
+    return render_template('teacher_check_task.html', tasks=task_all, user=user, id=int(id_teacher))
 
 
 @app.route('/logout', methods=['GET', 'POST'])
