@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+{% if current_user.is_authenticated %}
+    {% if current_user.role == 'Преподаватель' %}
+        <h1>Teacher</h1>
+    {% else %}
+        <meta http-equiv="refresh" content="0;URL=/"/>
+    {% endif %}
+    {% endif %}
+{% endblock content %}

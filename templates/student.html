@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+    {% if current_user.is_authenticated %}
+        {% if current_user.role == 'Студент' %}
+            <div class="student-buttons">
+                <a href="/student/upload"><input type="submit" value="Задать новое задание"></a>
+                <a href="/"><input type="submit" value="Посмотреть отправленные задания"></a>
+            </div>
+        {% else %}
+            <meta http-equiv="refresh" content="0;URL=/"/>
+    {% endif %}
+    {% endif %}
+{% endblock content %}

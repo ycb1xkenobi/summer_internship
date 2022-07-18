@@ -5,9 +5,13 @@
         <img class="rounded-circle account-img" src="{{ image_file }}">
         <div class="media-body">
 
-          <h2 class="account-heading">{{ current_user.username }}</h2>
-          <p class="text-secondary">{{ current_user.email }}</p>
-          <p class="text-secondary">{{ current_user.role }}</p>
+            <h2 class="account-heading">{{ current_user.name}}</h2>
+            <h2 class="account-heading">{{ current_user.surname }}</h2>
+            <p class="text-secondary">{{ current_user.email }}</p>
+            <p class="text-secondary">{{ current_user.role }}</p>
+            <p class="text-secondary">Группа: {{ current_user.group }}</p>
+            <p class="text-secondary">Год поступления: {{ current_user.yearadmission }}</p>
+            <p class="text-secondary">Айди: {{ current_user.id }}</p>
         </div>
       </div>
         <form method="POST" action="" enctype="multipart/form-data">
@@ -15,17 +19,31 @@
             <fieldset class="form-group">
                 <legend class="border-bottom mb-4">Информация</legend>
                 <div class="form-group">
-                    {{ form.username.label(class="form-control-label") }}
+                    {{ form.name.label(class="form-control-label") }}
 
-                    {% if form.username.errors %}
-                        {{ form.username(class="form-control form-control-lg is-invalid") }}
+                    {% if form.name.errors %}
+                        {{ form.name(class="form-control form-control-lg is-invalid") }}
                         <div class="invalid-feedback">
-                            {% for error in form.username.errors %}
+                            {% for error in form.name.errors %}
                                 <span>{{ error }}</span>
                             {% endfor %}
                         </div>
                     {% else %}
-                        {{ form.username(class="form-control form-control-lg") }}
+                        {{ form.name(class="form-control form-control-lg") }}
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    {{ form.surname.label(class="form-control-label") }}
+
+                    {% if form.surname.errors %}
+                        {{ form.surname(class="form-control form-control-lg is-invalid") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.surname.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.surname(class="form-control form-control-lg") }}
                     {% endif %}
                 </div>
                 <div class="form-group">
@@ -39,6 +57,34 @@
                         </div>
                     {% else %}
                         {{ form.email(class="form-control form-control-lg") }}
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    {{ form.group.label(class="form-control-label") }}
+
+                    {% if form.group.errors %}
+                        {{ form.group(class="form-control form-control-lg is-invalid") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.group.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.group(class="form-control form-control-lg") }}
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    {{ form.yearadmission.label(class="form-control-label") }}
+
+                    {% if form.yearadmission.errors %}
+                        {{ form.yearadmission(class="form-control form-control-lg is-invalid") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.yearadmission.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.yearadmission(class="form-control form-control-lg") }}
                     {% endif %}
                 </div>
                 <div class="form-group">

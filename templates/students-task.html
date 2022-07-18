@@ -1,0 +1,33 @@
+<link rel="stylesheet" href="../static/main.css">
+
+{% extends 'base.html' %}
+
+{% block body %}
+<form method="POST">
+    <div>
+        <div >
+            <div class="left-bar">
+                <div>
+                    <h4>Статус:</h4>
+                    <h5>-</h5>
+                </div>
+
+                <div>
+                    <h5 classname="middle-text">Введите сроки сдачи через тире:</h5>
+                    <input name="term" size="20px" placeholder="дд-мм-гггг">
+                    <p id="checkbox-button"><input type="checkbox" name="term">Бессрочный<Br></p>
+                </div>
+
+                <div>
+                    <h4>Оценка</h4>
+                    <h5>1-5</h5>
+                </div>
+                <div id="submit">
+                    <input type="submit" value="Подтвердить">
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+{% endblock %}
