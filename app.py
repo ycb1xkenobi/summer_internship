@@ -75,6 +75,15 @@ class ChangePassword(FlaskForm):
     submit = SubmitField('Сохранить')
 
 
+class Registration(FlaskForm):
+    email = StringField('Введите почту')
+    submit = SubmitField('Регистрация')
+
+    def validate_email(self, email):
+        user = Users.query.filter_by(email=email.data).first()
+        if user:
+            raise ValidationError('Эта почта занята')
+
 class UpdateAccountForm(FlaskForm):
     name = StringField('Имя')
     surname = StringField('Фамилия')
@@ -105,12 +114,12 @@ def index():
 
 @app.route('/admin/registerpage/', methods=['POST', 'GET'])
 def register():
-    if request.method == 'POST':
-        email = request.form['email']
-        role = request.form['role']
-        id = db.session.query(Users).count() + 1
+    form = Registration()
+    if form.validate_on_submit():
+        email = request.form.get('email')
+        role = request.form.get('select')
         password = create_password()
-        userinfo = Users(id=id, email=email, password=password, role=role, name='-', surname='-', yearadmission='-',
+        userinfo = Users(email=email, password=password, role=role, name='-', surname='-', yearadmission='-',
                          group='-')
         if role in app.config['ROLES']:
             user = Users.query.filter_by(email=email).first()
@@ -125,7 +134,7 @@ def register():
                     flash('Это не почта!', 'danger')
         else:
             flash('Такой роли не существует', 'danger')
-    return render_template("register.html")
+    return render_template("register.html", form=form)
 
 
 @app.route("/teacher/checktask/<task_id>")
@@ -311,7 +320,7 @@ def redirect_to_signin(response):
 
 @manager.user_loader
 def load_user(user_id):
-    return Users.query.get(user_id)
+    return Users.query.get(user_id)  # id = db.session.query(Users).count() + 1
 
 
 admin = Admin(app, 'Админ панель', template_mode='bootstrap3')
