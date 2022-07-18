@@ -5,7 +5,7 @@ from flask_login import LoginManager, login_user, login_required, logout_user, U
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField
-from wtforms import PasswordField, StringField, BooleanField, SubmitField, TextAreaField, SelectField
+from wtforms import PasswordField, StringField, BooleanField, SubmitField, validators
 from wtforms.validators import ValidationError
 from werkzeug.exceptions import RequestEntityTooLarge
 
@@ -48,6 +48,7 @@ class Tasks(db.Model):
     text = db.Column(db.Text(2000), nullable=False)
     answer = db.Column(db.Text(1000), nullable=False)
     fromuser = db.Column(db.String(100), nullable=False)
+    fromuserid = db.Column(db.String(100), nullable=False)
     touser = db.Column(db.String(100), nullable=False)
 
 
@@ -63,10 +64,14 @@ class LoginForm(FlaskForm):
 
 class AddTask(FlaskForm):
     touser_field = StringField('Почта преподавателя')
-    date_field = StringField('Дата окончания')
+    date_field = StringField('Дата конца срока (Если задание со сроком)')
     header_field = StringField('Заголовок')
     submit = SubmitField('Отправить')
 
+class ChangePassword(FlaskForm):
+    password1 = PasswordField('Введите новый пароль')
+    password2 = PasswordField('Повторите новый пароль')
+    submit = SubmitField('Сохранить')
 
 class UpdateAccountForm(FlaskForm):
     name = StringField('Имя')
@@ -145,6 +150,20 @@ def account():
                            image_file=image_file, form=form)
 
 
+@app.route('/changepassword', methods=['GET', 'POST'])
+@login_required
+def changepassword():
+    form = ChangePassword()
+    if form.validate_on_submit():
+        if form.password1.data == form.password2.data:
+            current_user.password = form.password1.data
+            db.session.commit()
+            flash('Пароль обновлен')
+        else:
+            flash('Пароли не совпадают', 'danger')
+    return render_template('changepassword.html', form=form)
+
+
 @app.route("/account/<id>", methods=['GET', 'POST'])
 @login_required
 def watch_profiles(id):
@@ -175,26 +194,35 @@ def uploadtask():
         date = form.date_field.data
         touser = form.touser_field.data
         status = request.form.get('select')
+        check = 0
+        if date and status == '2':
+            check = 1
+        if status == '1':
+            check = 1
         try:
             user = Users.query.filter_by(email=touser).first()
             if user:
                 if user.role == 'Преподаватель':
-                    if text and header and date and touser:
-                        if filetype in app.config['ALLOWED_EXTENSIONS']:
-                            if current_user.name == '-' or current_user.surname == '-' or current_user.group == '-' or current_user.yearadmission == '-':
-                                flash('Измените профиль, добавьте информацию о себе', 'danger')
-                            else:
-                                upload = Tasks(filename=file.filename, data=file.read(), mark='-', status=status,
+                    if text and header and touser:
+                        if check == 1:
+                            if filetype in app.config['ALLOWED_EXTENSIONS']:
+                                if current_user.name == '-' or current_user.surname == '-' or current_user.group == '-' or current_user.yearadmission == '-':
+                                    flash('Измените профиль, добавьте информацию о себе', 'danger')
+                                else:
+                                    upload = Tasks(filename=file.filename, data=file.read(), mark='-', status=status,
                                                date=date,
                                                text=text,
                                                answer='-', fromuser=current_user.name + ' ' + current_user.surname,
                                                touser=touser,
-                                               header=header)
-                                db.session.add(upload)
-                                db.session.commit()
-                                flash(f'Добавлено')
+                                               header=header,
+                                               fromuserid=current_user.id)
+                                    db.session.add(upload)
+                                    db.session.commit()
+                                    flash(f'Добавлено')
+                            else:
+                                flash('Неверный формат файла', 'danger')
                         else:
-                            flash('Неверный формат файла', 'danger')
+                            flash('Если задание со сроком, введите дату', 'danger')
                     else:
                         flash('Заполните все поля', 'danger')
                 else:
@@ -211,7 +239,7 @@ def uploadtask():
 def teacher_check_task(id):
     user = Users.query.filter_by(id=id).first()
     task_all = Tasks.query.filter_by(touser=user.email)
-    return render_template('teacher_check_task.html', tasks=task_all, user=user)
+    return render_template('teacher_check_task.html', tasks=task_all, user=user, id=int(id))
 
 
 @app.route('/logout', methods=['GET', 'POST'])
