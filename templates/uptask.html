@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+    {% if current_user.is_authenticated %}
+        {% if current_user.role == 'Студент' %}
+        {% else %}
+            <meta http-equiv="refresh" content="0;URL=/"/>
+    {% endif %}
+    {% endif %}
+{%endblock%}
