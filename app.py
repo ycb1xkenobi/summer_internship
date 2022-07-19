@@ -133,8 +133,9 @@ def account():
         current_user.name = form.name.data
         current_user.surname = form.surname.data
         current_user.email = form.email.data
-        current_user.group = form.group.data
-        current_user.yearadmission = form.yearadmission.data
+        if current_user.role == 'Преподаватель':
+            current_user.group = '-'
+            current_user.yearadmission = '-'
         db.session.commit()
         flash('Вы обновили свой аккаунт!', 'success')
         return redirect('/account')
