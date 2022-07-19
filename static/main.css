@@ -1,17 +1,17 @@
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;600&display=swap');
-.student-buttons{
-    padding: 20px;
-    align-items: center;
-    align-content: stretch;
-    align-items: stretch;
-    margin-left: 30%;
+.student-buttons {
+  position: absolute;
+  left: -40%;
+  align-items: center;
+  width: 230%;
+  height: 800px;
 }
 
-.student-buttons input[type="submit"]{
-    width: 45%;
-    height: 85%;
-    opacity: 80%;
-    margin: 10px;
+.student-buttons input[type="submit"] {
+  width: 45%;
+  height: 85%;
+  opacity: 80%;
+  margin: 10px;
 }
 
 .content{
@@ -179,4 +179,8 @@ a.article-title:hover {
 .flash.success {
     border: 1px solid #21DB56;
     background: #AEFFC5;
+}
+
+.form-group textarea{
+  resize: none;
 }

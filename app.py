@@ -1,4 +1,4 @@
-from flask import Flask, render_template, url_for, request, redirect, flash
+from flask import Flask, render_template, url_for, request, redirect, flash, send_file
 from flask_admin import Admin, BaseView, expose, AdminIndexView
 from flask_admin.contrib.sqla import ModelView
 from flask_login import LoginManager, login_user, login_required, logout_user, UserMixin, current_user
@@ -9,6 +9,7 @@ from wtforms import PasswordField, StringField, BooleanField, SubmitField
 from wtforms.validators import ValidationError
 from werkzeug.exceptions import RequestEntityTooLarge
 from werkzeug.security import check_password_hash, generate_password_hash
+from io import BytesIO
 
 from passwords import create_password
 from save_picture import save_picture
@@ -173,6 +174,26 @@ def delete_task(task_id):
     except AttributeError:
         flash('Такого задания не существует', 'danger')
     return render_template('delete_task.html')
+
+
+@app.route('/download/<task_id>')
+@login_required
+def download(task_id):
+    task = Tasks.query.filter_by(id=task_id).first()
+    try:
+        if current_user.id == int(task.fromuserid):
+            return send_file(BytesIO(task.data), attachment_filename=task.filename, as_attachment=True)
+        elif current_user.email == task.touser:
+            return send_file(BytesIO(task.data), attachment_filename=task.filename, as_attachment=True)
+        else:
+            return 'Вы не загружали этот файл/Этот файл не для вас'
+    except TypeError:
+        return 'Такого файла не существует'
+    except AttributeError:
+        return 'Такого задания не существует'
+
+
+
 
 @app.route("/account", methods=['GET', 'POST'])
 @login_required
