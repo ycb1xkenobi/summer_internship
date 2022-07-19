@@ -1,3 +1,4 @@
+import sqlalchemy
 from flask import Flask, render_template, url_for, request, redirect, flash, send_file
 from flask_admin import Admin, BaseView, expose, AdminIndexView
 from flask_admin.contrib.sqla import ModelView
@@ -52,10 +53,13 @@ class Tasks(db.Model):
     fromuser = db.Column(db.String(100), nullable=False)
     fromuserid = db.Column(db.String(100), nullable=False)
     touser = db.Column(db.String(100), nullable=False)
+    priority = db.Column(db.Integer, nullable=False)
 
 
 # status 0 - выполненые 1 - бессрочные 2 - срочные 3 - закрепленные 4 - просмотрено(оценено)
 
+class UploadSomething(FlaskForm):
+    submit = SubmitField('Сохранить')
 
 class LoginForm(FlaskForm):
     email = StringField('Электронная почта')
@@ -133,7 +137,7 @@ def register():
         if role in app.config['ROLES']:
             user = Users.query.filter_by(email=email).first()
             if user:
-                flash('Такой пользователь зарегистрирован', 'danger')
+                flash('Такой пользователь уже зарегистрирован', 'danger')
             else:
                 if '@' in email:
                     db.session.add(userinfo)
@@ -146,11 +150,20 @@ def register():
     return render_template("register.html", form=form)
 
 
-@app.route("/teacher/checktask/<task_id>")
+@app.route("/teacher/checktask/<task_id>", methods=['GET', 'POST'])
 @login_required
 def teacher_check_task_id(task_id):
     task_id = int(task_id)
     checked_task = Tasks.query.filter_by(id=task_id).first()
+    if request.method == 'POST':
+        mark = request.form.get("selectmark")
+        status = request.form.get("selectstatus")
+        answer = request.form.get("answer")
+        checked_task.mark = mark
+        checked_task.status = status
+        checked_task.answer = answer
+        flash('Вы успешно ответили', 'success')
+        db.session.commit()
     return render_template('teacher_check_task_id.html', task=checked_task)
 
 @app.route("/student/checktask/<task_id>")
@@ -174,6 +187,27 @@ def delete_task(task_id):
     except AttributeError:
         flash('Такого задания не существует', 'danger')
     return render_template('delete_task.html')
+
+
+@app.route('/student/uptask/<task_id>')
+@login_required
+def up_task(task_id):
+    up_task = Tasks.query.filter_by(id=task_id).first()
+    priority_up = up_task.priority
+
+    if current_user.id == int(up_task.fromuserid):
+        while priority_up != 0:
+            changetask = Tasks.query.filter_by(priority=priority_up).first()
+            if changetask:
+                changetask.priority = priority_up+1
+                db.session.commit()
+            priority_up -= 1
+        up_task.priority = 1
+        db.session.commit()
+        flash('Вы успешно подняли ваше задание', 'success')
+    else:
+        flash('Вы не создавали это задание', 'danger')
+    return render_template('uptask.html')
 
 
 @app.route('/download/<task_id>')
@@ -247,6 +281,12 @@ def watch_profiles(id_profile):
     image_file = url_for('static', filename='profile_pics/' + user.image_file)
     return render_template('profile.html', user=user, image_file=image_file)
 
+@app.route('/teacher/checkedtask/<id>')
+@login_required
+def teacher_checked_task(id):
+    user = Users.query.filter_by(id=id).first()
+    task_all = Tasks.query.filter_by(touser=user.email)
+    return render_template('teacher_checked_task.html', tasks=task_all, user=user, id=int(id))
 
 @app.route('/student', methods=['GET', 'POST'])
 @login_required
@@ -270,7 +310,11 @@ def upload_task():
         date = form.date_field.data
         touser = form.touser_field.data
         status = request.form.get('select')
-        check = 0
+        task = db.session.query(Tasks).order_by(Tasks.priority.desc()).first()
+        if task:
+            priority = task.priority + 1
+        else:
+            priority = 1
         if date and status == '2':
             check = 1
         if status == '1':
@@ -291,7 +335,8 @@ def upload_task():
                                                    answer='-', fromuser=current_user.name + ' ' + current_user.surname,
                                                    touser=touser,
                                                    header=header,
-                                                   fromuserid=current_user.id)
+                                                   fromuserid=current_user.id,
+                                                   priority=priority)
                                     db.session.add(upload)
                                     db.session.commit()
                                     flash(f'Добавлено', 'success')
@@ -328,7 +373,7 @@ def teacher():
 @login_required
 def teacher_check_task(id_teacher):
     user = Users.query.filter_by(id=id_teacher).first()
-    task_all = Tasks.query.filter_by(touser=user.email)
+    task_all = Tasks.query.filter_by(touser=user.email).order_by(Tasks.priority).all()
     return render_template('teacher_check_task.html', tasks=task_all, user=user, id=int(id_teacher))
 
 
@@ -353,8 +398,10 @@ def login():
                 login_user(user, remember=form.remember.data)
                 next_page = request.args.get('next')
                 return redirect(next_page) if next_page else redirect('/')
+            else:
+                flash('Неудачный вход', 'danger')
         else:
-            flash('Неудачный вход', 'danger')
+            flash('Заполните все поля', 'danger')
     return render_template('login.html', title='Login', form=form)
 
 
@@ -368,7 +415,7 @@ def redirect_to_signin(response):
 
 @manager.user_loader
 def load_user(user_id):
-    return Users.query.get(user_id)  # id = db.session.query(Users).count() + 1
+    return Users.query.get(user_id)
 
 
 admin = Admin(app, 'Админ панель', template_mode='bootstrap3', index_view=DashboardView(), endpoint='admin')
