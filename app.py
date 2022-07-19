@@ -5,8 +5,8 @@ from flask_login import login_user, login_required, logout_user, current_user
 from werkzeug.exceptions import RequestEntityTooLarge
 from werkzeug.security import check_password_hash, generate_password_hash
 from io import BytesIO
-from forms import LoginForm, AddTask, ChangePassword, Registration, UpdateAccountForm, RegisterPage, DashboardView, Users
-from models import Tasks
+from forms import LoginForm, AddTask, ChangePassword, Registration, UpdateAccountForm, RegisterPage, DashboardView, Users, AddStudentForm, DeleteStudentForm
+from models import Tasks, AddStudent
 from passwords import create_password
 from save_picture import save_picture
 from __init__ import db, app, manager
@@ -136,6 +136,9 @@ def account():
         if current_user.role == 'Преподаватель':
             current_user.group = '-'
             current_user.yearadmission = '-'
+        else:
+            current_user.group = form.group.data
+            current_user.yearadmission = form.yearadmission.data
         db.session.commit()
         flash('Вы обновили свой аккаунт!', 'success')
         return redirect('/account')
@@ -167,12 +170,64 @@ def changepassword():
     return render_template('changepassword.html', form=form)
 
 
-@app.route("/account/<id_profile>", methods=['GET', 'POST'])
+@app.route("/teacher/addstudent", methods=['GET', 'POST'])
+@login_required
+def add_student():
+    form = AddStudentForm()
+    if form.validate_on_submit():
+        teacherid = str(current_user.id)
+        student = form.studentemail.data
+        user = Users.query.filter_by(email=student).first()
+        if user:
+            info = AddStudent(studentemail=student, teacherid=teacherid, studentid=str(user.id))
+            db.session.add(info)
+            db.session.commit()
+            flash(f'Вы успешно добавили студента {user.name} {user.surname}', 'success')
+        else:
+            flash('Такого студента не существует','danger')
+    return render_template('addstudent.html', form=form)
+
+
+@app.route("/teacher/deletestudent", methods=['GET', 'POST'])
+@login_required
+def delete_student():
+    form = DeleteStudentForm()
+    if form.validate_on_submit():
+        teacherid = str(current_user.id)
+        student = form.studentemail.data
+        user = Users.query.filter_by(email=student).first()
+        if user:
+            info1 = AddStudent.query.filter_by(teacherid=teacherid).first()
+            if info1:
+                info2 = info1.query.filter_by(studentemail=student).first()
+                if info2:
+                    db.session.delete(info2)
+                    db.session.commit()
+                    flash(f'Вы успешно удалили студента {user.name} {user.surname}', 'success')
+                else:
+                    flash('Такой студент у вас не добавлен', 'danger')
+            else:
+                flash('Вы еще не добавляли студентов','danger')
+        else:
+            flash('Такого студента не существует','danger')
+    return render_template('addstudent.html', form=form)
+
+
+@app.route("/teacher/mystudents")
+@login_required
+def mystudents():
+    myid = str(current_user.id)
+    mystudent = AddStudent.query.filter_by(teacherid=myid).all()
+    return render_template('mystudents.html', students=mystudent)
+
+
+app.route("/account/<id_profile>", methods=['GET', 'POST'])
 @login_required
 def watch_profiles(id_profile):
     user = Users.query.filter_by(id=id_profile).first()
-    image_file = url_for('static', filename='profile_pics/' + user.image_file)
-    return render_template('profile.html', user=user, image_file=image_file)
+    if user:
+        image_file = url_for('static', filename='profile_pics/' + user.image_file)
+        return render_template('profile.html', user=user, image_file=image_file)
 
 @app.route('/teacher/checkedtask/<id>')
 @login_required
@@ -218,11 +273,17 @@ def upload_task():
                 if user.role == 'Преподаватель':
                     if text and header and touser:
                         if check == 1:
-                            if filetype in app.config['ALLOWED_EXTENSIONS']:
-                                if current_user.name == '-' or current_user.surname == '-' or current_user.group == '-' or current_user.yearadmission == '-':
-                                    flash('Измените профиль, добавьте информацию о себе', 'danger')
-                                else:
-                                    upload = Tasks(filename=file.filename, data=file.read(), mark='-', status=status,
+                            currentemail = str(current_user.email)
+                            teacherid = str(user.id)
+                            check1 = AddStudent.query.filter_by(teacherid=teacherid).first()
+                            if check1:
+                                check2 = check1.query.filter_by(studentemail=currentemail).first()
+                                if check2:
+                                    if filetype in app.config['ALLOWED_EXTENSIONS']:
+                                        if current_user.name == '-' or current_user.surname == '-' or current_user.group == '-' or current_user.yearadmission == '-':
+                                            flash('Измените профиль, добавьте информацию о себе', 'danger')
+                                        else:
+                                            upload = Tasks(filename=file.filename, data=file.read(), mark='-', status=status,
                                                    date=date,
                                                    text=text,
                                                    answer='-', fromuser=current_user.name + ' ' + current_user.surname,
@@ -230,11 +291,13 @@ def upload_task():
                                                    header=header,
                                                    fromuserid=current_user.id,
                                                    priority=priority)
-                                    db.session.add(upload)
-                                    db.session.commit()
-                                    flash(f'Добавлено', 'success')
+                                            db.session.add(upload)
+                                            db.session.commit()
+                                            flash(f'Добавлено', 'success')
+                                    else:
+                                        flash('Неверный формат файла', 'danger')
                             else:
-                                flash('Неверный формат файла', 'danger')
+                                flash('Данный преподаватель вас не добавил', 'danger')
                         else:
                             flash('Если задание со сроком, введите дату', 'danger')
                     else:
@@ -314,6 +377,7 @@ def load_user(user_id):
 admin = Admin(app, 'Админ панель', template_mode='bootstrap3', index_view=DashboardView(), endpoint='admin')
 admin.add_view(ModelView(Users, db.session, name='Пользователи'))
 admin.add_view(ModelView(Tasks, db.session, name='Задания'))
+admin.add_view(ModelView(AddStudent, db.session, name='Студенты-преподы'))
 admin.add_view(RegisterPage(name='Регистрация пользователей'))
 
 if __name__ == '__main__':

@@ -29,3 +29,10 @@ class Tasks(db.Model):
     fromuserid = db.Column(db.String(100), nullable=False)
     touser = db.Column(db.String(100), nullable=False)
     priority = db.Column(db.Integer, nullable=False)
+
+
+class AddStudent(db.Model):
+    id=db.Column(db.Integer, primary_key=True)
+    teacherid = db.Column(db.String(100), nullable=False)
+    studentemail = db.Column(db.String(100), nullable=False)
+    studentid = db.Column(db.String(100), nullable=False)

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+{% if current_user.is_authenticated %}
+        {% if current_user.role == 'Преподаватель' %}
+<form method="POST" action="" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+            <fieldset class="form-group">
+                <div class="form-group">
+                    {{ form.studentemail.label(class="form-control-label") }}
+
+                    {% if form.studentemail.errors %}
+                        {{ form.studentemail(class="form-control form-control-lg is-invalid") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.studentemail.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.studentemail(class="form-control form-control-lg") }}
+                    {% endif %}
+                </fieldset>
+            <div class="form-group">
+                {{ form.submit(class="btn btn-outline-info") }}
+                {% else %}
+            <meta http-equiv="refresh" content="0;URL=/"/>
+    {% endif %}
+    {% endif %}
+    </form>
+</div>
+{% endblock content %}

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+{% if current_user.is_authenticated %}
+    {% if current_user.role != 'Преподаватель' %}
+        <meta http-equiv="refresh" content="0;URL=/"/>
+    {%else%}
+        {% for student in students %}
+            <a href="/account/{{student.studentid}}"><h1>{{student.studentemail}}</h1></a>
+        {%endfor%}
+    {% endif %}
+    {% endif %}
+{% endblock content %}

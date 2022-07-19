@@ -31,6 +31,16 @@ class ChangePassword(FlaskForm):
     submit = SubmitField('Сохранить')
 
 
+class AddStudentForm(FlaskForm):
+    studentemail = StringField('Введите почту студента')
+    submit = SubmitField('Добавить студента')
+
+
+class DeleteStudentForm(FlaskForm):
+    studentemail = StringField('Введите почту студента')
+    submit = SubmitField('Удалить студента')
+
+
 class Registration(FlaskForm):
     email = StringField('Введите почту')
     submit = SubmitField('Регистрация')
