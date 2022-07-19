@@ -1,4 +1,3 @@
-
 from __init__ import db
 from flask_login import UserMixin
 
@@ -29,5 +28,4 @@ class Tasks(db.Model):
     fromuser = db.Column(db.String(100), nullable=False)
     fromuserid = db.Column(db.String(100), nullable=False)
     touser = db.Column(db.String(100), nullable=False)
-
-    # status 0 - выполненые 1 - бессрочные 2 - срочные 3 - закрепленные 4 - просмотрено(оценено)
+    priority = db.Column(db.Integer, nullable=False)

@@ -1,6 +1,8 @@
 import secrets
 import os
 from PIL import Image
+
+
 def save_picture(form_picture, app):
     random_hex = secrets.token_hex(8)
     _, f_ext = os.path.splitext(form_picture.filename)
