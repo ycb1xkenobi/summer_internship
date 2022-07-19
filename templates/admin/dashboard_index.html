@@ -1,0 +1,12 @@
+{% extends 'admin/master.html' %}
+
+{% block body %}
+{% if current_user.role != 'Админ' %}
+    Пока что заглушка
+{% else %}
+    <h1>Добро пожаловать {{current_user.name}}</h1>
+    <div class="student-buttons">
+        <a href="/"><input type="submit" value="На главную страницу"></a>
+    </div>
+{%endif%}
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<form method="POST" action="" enctype="multipart/form-data">
+{% if current_user.is_authenticated %}
+    {% if current_user.role == 'Преподаватель' %}
+        {% if current_user.email == task.touser %}
+                <div class="task-student-list">
+                    <h2>{{task.header}}</h2>
+                    <textarea readonly rows="20" cols="100">{{ task.text }}</textarea>
+                    <a href="/download/{{task.id}}"><input type="button" value="Скачать файл"></a>
+                </div>
+
+                <div class="left-bar-task">
+
+                    <select name="selectstatus">
+                        <option value="4">Оценено</option>
+                        <option value="3">Закрепленно</option>
+                    </select>
+
+                    <select name="selectmark">
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                    </select>
+
+                    <h5>Отправлено {{task.fromuser}}</h5>
+
+                </div>
+
+                <div class="right-bar-task">
+                    <h6 class="task-answer">{{task.answer}}</h6>
+                    <textarea cols="65" rows="10" name="answer" placeholder="Введите сообщение"></textarea>
+                    <a href="/123"><input type="submit" value="Отправить"></a>
+
+                </div>
+        {%else%}
+            <meta http-equiv="refresh" content="0;URL=/"/>
+        {% endif %}
+    {%else%}
+        <meta http-equiv="refresh" content="0;URL=/"/>
+</form>
+{%endif%}
+{% endif %}
+{% endblock content %}

@@ -31,6 +31,10 @@
             <!-- Navbar Right Side -->
             <div class="navbar-nav">
               {% if current_user.is_authenticated %}
+                {% if current_user.role == 'Админ' %}
+                    <a class="nav-item nav-link" href="{{ '/admin' }}">Админ панель</a>
+                {% endif %}
+                <a class="nav-item nav-link" href="{{ url_for('changepassword') }}">Смена пароля</a>
                 <a class="nav-item nav-link" href="{{ url_for('account') }}">Аккаунт</a>
                 <a class="nav-item nav-link" href="{{ url_for('logout') }}">Выйти</a>
               {% else %}
@@ -45,7 +49,7 @@
     <main role="main" class="container">
       <div class="row">
         <div class="col-md-8">
-          {% with messages = get_flashed_messages(with_categories=true) %}
+          {% with messages = get_flashed_messages(True) %}
             {% if messages %}
               {% for category, message in messages %}
                 <div class="alert alert-{{ category }}">

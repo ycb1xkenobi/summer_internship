@@ -1,15 +1,34 @@
 {% extends "base.html" %}
 {% block content %}
-<div class = "container">
-    <div class = "container mt-4">
-        <h1 class="h3 mb-3 fw-normal">Зарегистрируйте пользователя</h1>
-            <form method="post">
-                <input class="form-control form-control-lg" name="email" id="email" type="text" placeholder="Введите email" aria-label=".form-control-lg example">
-                <input class="form-control form-control-lg" name="role" id="role" type="text" placeholder="Введите роль" aria-label=".form-control-lg example">
+<form method="POST" action="" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+            <fieldset class="form-group">
+                <div class="form-group">
+                    {{ form.email.label(class="form-control-label") }}
 
-
-
-        <button class="w-100 btn btn-lg btn-primary" type="submit">Регистрация</button>
-      </form>
+                    {% if form.email.errors %}
+                        {{ form.email(class="form-control form-control-lg is-invalid") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.email.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.email(class="form-control form-control-lg") }}
+                    {% endif %}
+                    <div class="form-group">
+                    </div>
+                    <span class="input-group-addon">Выберите роль:</span>
+                    <h1> </h1>
+                    <select class="form-control" id="continent_selector" name="select">
+                        <option value="Студент">Студент</option>
+                        <option value="Преподаватель">Преподаватель</option>
+                        <option value="Админ">Админ</option>
+                    </select>
+                </fieldset>
+            <div class="form-group">
+                {{ form.submit(class="btn btn-outline-info") }}
+            <div>
+    </form>
 </div>
 {% endblock content %}

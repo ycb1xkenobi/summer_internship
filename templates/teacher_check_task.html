@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+{% if current_user.is_authenticated %}
+    {% if current_user.role == 'Преподаватель' %}
+        {% if current_user.id != id %}
+            <meta http-equiv="refresh" content="0;URL=/"/>
+        {% else %}
+            <div class="teacher-list">
+
+                <div class="left-teacher-list">
+                    <h2>Бессрочные</h2>
+                    {% for task in tasks %}
+                        {% if task.status == '1' %}
+                            <a href="/teacher/checktask/{{task.id}}"><h3>Задание: {{ task.header }} </h3></a>
+                            <a href="/account/{{task.fromuserid}}"><h4>от {{task.fromuser}}</h4></a>
+                        {%endif%}
+                    {%endfor%}
+                </div>
+
+                <div class="middle-teacher-list">
+                    <h2>Со сроком</h2>
+                    {% for task in tasks %}
+                        {% if task.status == '2' %}
+                            <a href="/teacher/checktask/{{task.id}}"><h3>Задание: {{ task.header }} </h3></a>
+                            <a href="/account/{{task.fromuserid}}"><h4>от {{task.fromuser}}</h4></a>
+                        {%endif%}
+                    {%endfor%}
+                </div>
+
+                <div class="right-teacher-list">
+                    <h2>Закрепленные</h2>
+                    {% for task in tasks %}
+                        {% if task.status == '3' %}
+                            <a href="/teacher/checktask/{{task.id}}"><h3>Задание: {{ task.header }} </h3></a>
+                            <a href="/account/{{task.fromuserid}}"><h4>от {{task.fromuser}}</h4></a>
+                        {%endif%}
+                    {%endfor%}
+                </div>
+
+            </div>
+        {% endif %}
+    {% else %}
+        <meta http-equiv="refresh" content="0;URL=/"/>
+    {% endif %}
+    {% endif %}
+{% endblock content %}

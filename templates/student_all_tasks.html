@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+{% if current_user.is_authenticated %}
+    {% if current_user.role == 'Студент' %}
+        {% if current_user.id != id %}
+            <meta http-equiv="refresh" content="0;URL=/"/>
+        {% else %}
+        <div class="task-student-list">
+            {% for task in uploaded %}
+                    <div >
+                        <a href="/student/checktask/{{task.id}}"><h3 name="header">{{ task.header }}</h3></a>
+                        {% if task.status == "1" or task.status == "2" %}
+                            <h5>Не просмотрено</h4>
+                        {% elif task.status == "3" %}
+                            <h5>Просмотрено</h5>
+                        {% elif task.status == "4" %}
+                            <h5>Оценено</h5>
+                        {% endif %}
+
+                        {% if task.status == "1" or task.status == "2" %}
+                            <a href="/student/deletetask/{{task.id}}"><input type="button" value="Удалить"></a>
+                        {% endif %}
+                    </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    {% else %}
+        <meta http-equiv="refresh" content="0;URL=/"/>
+    {% endif %}
+    {% endif %}
+{% endblock content %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+{% if current_user.is_authenticated %}
+    {% if current_user.role == 'Студент' %}
+        {% if id == task.fromuserid %}
+            <div class="task-student-list">
+                <h2>{{task.header}}</h2>
+                <textarea readonly rows="20" cols="100">{{ task.text }}</textarea>
+                <a href="/download/{{task.id}}"><input type="button" value="Скачать файл"></a>
+            </div>
+
+            <div class="left-bar-task">
+                {% if task.status == "1" or task.status == "2" or task.status == "3" %}
+                    <a href="/student/uptask/{{task.id}}"><input type="button" value="Поднять вверх"></a>
+                {% endif %}
+
+                {% if task.status == "1" or task.status == "2" %}
+                    <a href="/student/deletetask/{{task.id}}"><input type="button" value="Удалить"></a>
+                {% endif %}
+                <h5>Оценка: {{task.mark}}</h5>
+                {% if task.status == "1" or task.status == "2" %}
+                    <h5>Не просмотрено</h5>
+                {% elif task.status == "3" %}
+                    <h5>Просмотрено</h5>
+                {% elif task.status == "4" %}
+                    <h5>Оценено</h5>
+                {% endif %}
+
+                <h5>Отправлено {{task.touser}}</h5>
+            </div>
+
+            <div class="right-bar-task">
+                <h6 class="task-answer">{{task.answer}}</h6>
+
+            </div>
+        {%else%}
+            <meta http-equiv="refresh" content="0;URL=/student/uploads/{{current_user.id}}"/>
+        {% endif %}
+    {%else%}
+        <meta http-equiv="refresh" content="0;URL=/"/>
+{%endif%}
+{% endif %}
+{% endblock content %}
