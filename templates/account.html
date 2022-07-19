@@ -9,8 +9,10 @@
             <h2 class="account-heading">{{ current_user.surname }}</h2>
             <p class="text-secondary">{{ current_user.email }}</p>
             <p class="text-secondary">{{ current_user.role }}</p>
+            {%if current_user.role == 'Студент' %}
             <p class="text-secondary">Группа: {{ current_user.group }}</p>
             <p class="text-secondary">Год поступления: {{ current_user.yearadmission }}</p>
+            {%endif%}
             <p class="text-secondary">Айди: {{ current_user.id }}</p>
         </div>
       </div>
@@ -59,6 +61,7 @@
                         {{ form.email(class="form-control form-control-lg") }}
                     {% endif %}
                 </div>
+                {% if current_user.role == 'Студент' %}
                 <div class="form-group">
                     {{ form.group.label(class="form-control-label") }}
 
@@ -96,6 +99,7 @@
                         {% endfor %}
                     {% endif %}
                 </div>
+                {%endif%}
             </fieldset>
             <div class="form-group">
                 {{ form.submit(class="btn btn-outline-info") }}
