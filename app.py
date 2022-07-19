@@ -1,90 +1,16 @@
-from flask import Flask, render_template, url_for, request, redirect, flash
-from flask_admin import Admin, BaseView, expose
+from flask import render_template, url_for, request, redirect, flash, send_file
+from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
-from flask_login import LoginManager, login_user, login_required, logout_user, UserMixin, current_user
-from flask_sqlalchemy import SQLAlchemy
-from flask_wtf import FlaskForm
-from flask_wtf.file import FileField
-from wtforms import PasswordField, StringField, BooleanField, SubmitField, form
-from wtforms.validators import ValidationError
+from flask_login import login_user, login_required, logout_user, current_user
 from werkzeug.exceptions import RequestEntityTooLarge
-
+from werkzeug.security import check_password_hash, generate_password_hash
+from io import BytesIO
+from forms import LoginForm, AddTask, ChangePassword, Registration, UpdateAccountForm, RegisterPage, DashboardView, Users
+from models import Tasks
 from passwords import create_password
 from save_picture import save_picture
+from __init__ import db, app, manager
 
-app = Flask(__name__)
-app.secret_key = 'ABC123'
-app.config['FLASK_ENV'] = 'development'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['ROLES'] = ['Студент', 'Преподаватель', 'Админ']
-app.config['ALLOWED_EXTENSIONS'] = ['zip', 'rar', 'jpg', 'jpeg' 'png', 'txt']
-app.config['MAX_CONTENT_LENGTH'] = 1 * 1024 * 1024  # 1MB
-
-db = SQLAlchemy(app)
-manager = LoginManager(app)
-
-
-class Users(db.Model, UserMixin):
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(50), nullable=False, unique=True)
-    password = db.Column(db.String(255), nullable=False)
-    role = db.Column(db.String(20), nullable=False)
-    name = db.Column(db.String(20), nullable=False)
-    surname = db.Column(db.String(20), nullable=False)
-    image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
-    group = db.Column(db.String(100), nullable=False)
-    yearadmission = db.Column(db.String(100), nullable=False)
-
-
-class Tasks(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    filename = db.Column(db.String(50))
-    data = db.Column(db.LargeBinary)
-    mark = db.Column(db.String(2), nullable=False)
-    status = db.Column(db.String(30), nullable=False)
-    date = db.Column(db.String(30))
-    text = db.Column(db.Text(2000), nullable=False)
-    answer = db.Column(db.Text(1000), nullable=False)
-    fromuser = db.Column(db.String(100), nullable=False)
-    touser = db.Column(db.String(100), nullable=False)
-
-
-# status 0 - выполненые 1 - бессрочные 2 - срочные 3 - закрепленные
-class LoginForm(FlaskForm):
-    email = StringField('Электронная почта')
-    password = PasswordField('Пароль')
-    remember = BooleanField('Запомнить')
-    submit = SubmitField('Войти')
-
-
-class UpdateAccountForm(FlaskForm):
-    name = StringField('Имя')
-    surname = StringField('Фамилия')
-    email = StringField('Электронная почта')
-    picture = FileField('Обновить фотографию')
-    group = StringField('Группа')
-    yearadmission = StringField('Год поступления')
-    submit = SubmitField('Обновить')
-
-    def validate_email(self, email):
-        if email.data != current_user.email:
-            user = Users.query.filter_by(email=email.data).first()
-            if user:
-                raise ValidationError('Эта почта занята, выберите другую')
-
-
-class RegisterPage(BaseView):
-    @expose('/')
-    def any_page(self):
-        return render_template('register.html')
-
-
-class LoginForm(FlaskForm):
-    email = StringField('Электронная почта')
-    password = PasswordField('Пароль')
-    remember = BooleanField('Запомнить')
-    submit = SubmitField('Войти')
 
 
 @app.route('/')
@@ -95,26 +21,104 @@ def index():
 
 @app.route('/admin/registerpage/', methods=['POST', 'GET'])
 def register():
-    if request.method == 'POST':
-        email = request.form['email']
-        role = request.form['role']
-        id = db.session.query(Users).count() + 1
-        password = create_password()
-        userinfo = Users(id=id, email=email, password=password, role=role, name='-', surname='-', yearadmission='-', group = '-')
-        try:
-            if role in app.config['ROLES']:
+    form = Registration()
+    if form.validate_on_submit():
+        email = request.form.get('email')
+        role = request.form.get('select')
+        non_hashed_password = create_password()
+        password = generate_password_hash(non_hashed_password)
+        userinfo = Users(email=email, password=password, role=role, name='-', surname='-', yearadmission='-',
+                         group='-')
+        if role in app.config['ROLES']:
+            user = Users.query.filter_by(email=email).first()
+            if user:
+                flash('Такой пользователь уже зарегистрирован', 'danger')
+            else:
                 if '@' in email:
                     db.session.add(userinfo)
                     db.session.commit()
-                    return redirect('/admin/users')
+                    flash(f'Пароль {non_hashed_password} для пользователя {email}', 'success')
                 else:
-                    return ('Проверьте правильность написания почты')
-            else:
-                return ('Проверьте правильность написания роли')
-        except:
-            return ('Произошла ошибка при добавлении пользователя')
+                    flash('Это не почта!', 'danger')
+        else:
+            flash('Такой роли не существует', 'danger')
+    return render_template("register.html", form=form)
+
+
+@app.route("/teacher/checktask/<task_id>", methods=['GET', 'POST'])
+@login_required
+def teacher_check_task_id(task_id):
+    task_id = int(task_id)
+    checked_task = Tasks.query.filter_by(id=task_id).first()
+    if request.method == 'POST':
+        checked_task.mark = request.form.get("selectmark")
+        checked_task.status = request.form.get("selectstatus")
+        checked_task.answer = request.form.get("answer")
+        db.session.commit()
+        return redirect('/teacher')
+    return render_template('teacher_check_task_id.html', task=checked_task)
+
+@app.route("/student/checktask/<task_id>")
+@login_required
+def student_check_task_id(task_id):
+    check_my_id = current_user.id
+    checked_task = Tasks.query.filter_by(id=task_id).first()
+    return render_template('student_check_task_id.html', task=checked_task, id=str(check_my_id))
+
+@app.route("/student/deletetask/<task_id>")
+@login_required
+def delete_task(task_id):
+    try:
+        delete_task = Tasks.query.filter_by(id=task_id).first()
+        if current_user.id == int(delete_task.fromuserid):
+            db.session.delete(delete_task)
+            db.session.commit()
+            flash('Вы успешно удалили задание', 'success')
+        else:
+            flash('Вы не создавали это задание', 'danger')
+    except AttributeError:
+        flash('Такого задания не существует', 'danger')
+    return render_template('delete_task.html')
+
+
+@app.route('/student/uptask/<task_id>')
+@login_required
+def up_task(task_id):
+    up_task = Tasks.query.filter_by(id=task_id).first()
+    priority_up = up_task.priority
+
+    if current_user.id == int(up_task.fromuserid):
+        while priority_up != 0:
+            changetask = Tasks.query.filter_by(priority=priority_up).first()
+            if changetask:
+                changetask.priority = priority_up+1
+                db.session.commit()
+            priority_up -= 1
+        up_task.priority = 1
+        db.session.commit()
+        flash('Вы успешно подняли ваше задание', 'success')
     else:
-        return render_template("register.html")
+        flash('Вы не создавали это задание', 'danger')
+    return render_template('uptask.html')
+
+
+@app.route('/download/<task_id>')
+@login_required
+def download(task_id):
+    task = Tasks.query.filter_by(id=task_id).first()
+    try:
+        if current_user.id == int(task.fromuserid):
+            return send_file(BytesIO(task.data), attachment_filename=task.filename, as_attachment=True)
+        elif current_user.email == task.touser:
+            return send_file(BytesIO(task.data), attachment_filename=task.filename, as_attachment=True)
+        else:
+            return 'Вы не загружали этот файл/Этот файл не для вас'
+    except TypeError:
+        return 'Такого файла не существует'
+    except AttributeError:
+        return 'Такого задания не существует'
+
+
 
 
 @app.route("/account", methods=['GET', 'POST'])
@@ -132,7 +136,7 @@ def account():
         current_user.group = form.group.data
         current_user.yearadmission = form.yearadmission.data
         db.session.commit()
-        flash('Вы обновили свой аккаунт!', 'Поздравляем')
+        flash('Вы обновили свой аккаунт!', 'success')
         return redirect('/account')
     elif request.method == 'GET':
         form.name.data = current_user.name
@@ -146,13 +150,35 @@ def account():
                            image_file=image_file, form=form)
 
 
-@app.route("/account/<id>", methods=['GET', 'POST'])
+@app.route('/changepassword', methods=['GET', 'POST'])
 @login_required
-def watch_profiles(id):
-    user = Users.query.filter_by(id=id).first()
+def changepassword():
+    form = ChangePassword()
+    if form.validate_on_submit():
+        if form.password1.data == form.password2.data:
+            non_hashed_password = form.password1.data
+            password = generate_password_hash(non_hashed_password)
+            current_user.password = password
+            db.session.commit()
+            flash('Пароль обновлен', 'success')
+        else:
+            flash('Пароли не совпадают', 'danger')
+    return render_template('changepassword.html', form=form)
+
+
+@app.route("/account/<id_profile>", methods=['GET', 'POST'])
+@login_required
+def watch_profiles(id_profile):
+    user = Users.query.filter_by(id=id_profile).first()
     image_file = url_for('static', filename='profile_pics/' + user.image_file)
     return render_template('profile.html', user=user, image_file=image_file)
 
+@app.route('/teacher/checkedtask/<id>')
+@login_required
+def teacher_checked_task(id):
+    user = Users.query.filter_by(id=id).first()
+    task_all = Tasks.query.filter_by(touser=user.email)
+    return render_template('teacher_checked_task.html', tasks=task_all, user=user, id=int(id))
 
 @app.route('/student', methods=['GET', 'POST'])
 @login_required
@@ -162,34 +188,85 @@ def student():
 
 @app.route('/student/upload', methods=['GET', 'POST'])
 @login_required
-def uploadtask():
-    if request.method == 'POST':
-        try:
-            file = request.files['file']
-
+def upload_task():
+    form = AddTask()
+    if form.validate_on_submit():
+        file = request.files['file']
+        if file:
             filetype = file.filename.split('.')
             filetype = filetype[1]
-            if filetype in app.config['ALLOWED_EXTENSIONS']:
-                if current_user.name == '-' or current_user.surname == '-' or current_user.group == '-' or current_user.yearadmission == '-':
-                    return 'Измените профиль, добавьте информацию о себе'
+        else:
+            filetype = 'txt'
+        text = request.form.get('text_field')
+        header = form.header_field.data
+        date = form.date_field.data
+        touser = form.touser_field.data
+        status = request.form.get('select')
+        task = db.session.query(Tasks).order_by(Tasks.priority.desc()).first()
+        if task:
+            priority = task.priority + 1
+        else:
+            priority = 1
+        if date and status == '2':
+            check = 1
+        if status == '1':
+            check = 1
+        try:
+            user = Users.query.filter_by(email=touser).first()
+            if user:
+                if user.role == 'Преподаватель':
+                    if text and header and touser:
+                        if check == 1:
+                            if filetype in app.config['ALLOWED_EXTENSIONS']:
+                                if current_user.name == '-' or current_user.surname == '-' or current_user.group == '-' or current_user.yearadmission == '-':
+                                    flash('Измените профиль, добавьте информацию о себе', 'danger')
+                                else:
+                                    upload = Tasks(filename=file.filename, data=file.read(), mark='-', status=status,
+                                                   date=date,
+                                                   text=text,
+                                                   answer='-', fromuser=current_user.name + ' ' + current_user.surname,
+                                                   touser=touser,
+                                                   header=header,
+                                                   fromuserid=current_user.id,
+                                                   priority=priority)
+                                    db.session.add(upload)
+                                    db.session.commit()
+                                    flash(f'Добавлено', 'success')
+                            else:
+                                flash('Неверный формат файла', 'danger')
+                        else:
+                            flash('Если задание со сроком, введите дату', 'danger')
+                    else:
+                        flash('Заполните все поля', 'danger')
                 else:
-                    upload = Tasks(filename=file.filename, data=file.read(), mark='-', status='1', date='-', text='-',
-                                   answer='-', fromuser=current_user.name + ' ' + current_user.surname, touser='-')
-                    db.session.add(upload)
-                    db.session.commit()
-                return f'Добавлено: {file.filename}'
+                    flash('Этот пользователь не преподаватель', 'danger')
             else:
-                return 'Неверный формат файла'
+                flash('Такого пользователя не существует', 'danger')
         except RequestEntityTooLarge:
-            return ('Файл слишком большой')
+            flash('Размер файла слишком большой', 'danger')
+    return render_template('addtask.html', form=form,
+                           statuses=[{'name': 'Задание без срока'}, {'name': 'Задание со сроком'}])
 
-    return render_template('uploadtask.html')
+
+@app.route('/student/uploads/<id_student>')
+@login_required
+def check_my_upload_task(id_student):
+    uploaded_task = Tasks.query.filter_by(fromuserid=str(current_user.id))
+    return render_template('student_all_tasks.html', id=int(id_student), uploaded=uploaded_task)
 
 
-@app.route('/teacher', methods=['GET', 'POST'])
+@app.route('/teacher')
 @login_required
 def teacher():
-    return render_template("teacher.html")
+    return render_template('teacher.html')
+
+
+@app.route('/teacher/<id_teacher>', methods=['GET', 'POST'])
+@login_required
+def teacher_check_task(id_teacher):
+    user = Users.query.filter_by(id=id_teacher).first()
+    task_all = Tasks.query.filter_by(touser=user.email).order_by(Tasks.priority).all()
+    return render_template('teacher_check_task.html', tasks=task_all, user=user, id=int(id_teacher))
 
 
 @app.route('/logout', methods=['GET', 'POST'])
@@ -201,19 +278,22 @@ def logout():
 
 @app.route("/login", methods=['GET', 'POST'])
 def login():
-    email = request.form.get('email')
-    password = request.form.get('password')
     form = LoginForm()
 
     if form.validate_on_submit():
-        user = Users.query.filter_by(email=form.email.data).first()
-        password = Users.query.filter_by(password=form.password.data).first()
-        if user and password:
-            login_user(user, remember=form.remember.data)
-            next_page = request.args.get('next')
-            return redirect(next_page) if next_page else redirect('/')
+        email = request.form.get('email')
+        password = request.form.get('password')
+
+        if email and password:
+            user = Users.query.filter_by(email=form.email.data).first()
+            if check_password_hash(user.password, password):
+                login_user(user, remember=form.remember.data)
+                next_page = request.args.get('next')
+                return redirect(next_page) if next_page else redirect('/')
+            else:
+                flash('Неудачный вход', 'danger')
         else:
-            flash('Неудачный вход', 'danger')
+            flash('Заполните все поля', 'danger')
     return render_template('login.html', title='Login', form=form)
 
 
@@ -230,7 +310,7 @@ def load_user(user_id):
     return Users.query.get(user_id)
 
 
-admin = Admin(app, 'Админ панель', template_mode='bootstrap3')
+admin = Admin(app, 'Админ панель', template_mode='bootstrap3', index_view=DashboardView(), endpoint='admin')
 admin.add_view(ModelView(Users, db.session, name='Пользователи'))
 admin.add_view(ModelView(Tasks, db.session, name='Задания'))
 admin.add_view(RegisterPage(name='Регистрация пользователей'))
