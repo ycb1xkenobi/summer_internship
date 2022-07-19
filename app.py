@@ -221,13 +221,12 @@ def mystudents():
     return render_template('mystudents.html', students=mystudent)
 
 
-app.route("/account/<id_profile>", methods=['GET', 'POST'])
+@app.route('/account/<profile_id>', methods=['GET', 'POST'])
 @login_required
-def watch_profiles(id_profile):
-    user = Users.query.filter_by(id=id_profile).first()
-    if user:
-        image_file = url_for('static', filename='profile_pics/' + user.image_file)
-        return render_template('profile.html', user=user, image_file=image_file)
+def watch_profiles(profile_id):
+    user = Users.query.filter_by(id=profile_id).first()
+    image_file = url_for('static', filename='profile_pics/' + user.image_file)
+    return render_template('profile.html', image_file=image_file, user=user )
 
 @app.route('/teacher/checkedtask/<id>')
 @login_required
