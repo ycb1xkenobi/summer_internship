@@ -28,10 +28,4 @@ class Tasks(db.Model):
     fromuser = db.Column(db.String(100), nullable=False)
     fromuserid = db.Column(db.String(100), nullable=False)
     touser = db.Column(db.String(100), nullable=False)
-<<<<<<< HEAD
     priority = db.Column(db.Integer, nullable=False)
-=======
-    priority = db.Column(db.Integer, nullable=False)
-
-    # status 0 - выполненые 1 - бессрочные 2 - срочные 3 - закрепленные 4 - просмотрено(оценено)
->>>>>>> dc39b3da68d7aabf8b5f7e888f4450635e482f69
