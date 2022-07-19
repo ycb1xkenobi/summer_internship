@@ -4,8 +4,9 @@
     {% if current_user.role != 'Преподаватель' %}
         <meta http-equiv="refresh" content="0;URL=/"/>
     {%else%}
+        <h1>Мои студенты</h1>
         {% for student in students %}
-            <a href="/account/{{student.studentid}}"><h1>{{student.studentemail}}</h1></a>
+            <a href="/account/{{student.studentid}}"><h3>{{student.studentemail}}</h3></a>
         {%endfor%}
     {% endif %}
     {% endif %}
