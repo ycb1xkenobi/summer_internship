@@ -4,7 +4,6 @@
 {% if current_user.is_authenticated %}
     {% if current_user.role == 'Преподаватель' %}
         {% if current_user.email == task.touser %}
-<<<<<<< HEAD
                 <div class="task-student-list">
                     <h2>{{task.header}}</h2>
                     <textarea readonly rows="20" cols="100">{{ task.text }}</textarea>
@@ -37,41 +36,6 @@
                     <a href="/teacher/{{current_user.id}}"><input type="button" value="Отправить"></a>
 
                 </div>
-=======
-            <div class="task-student-list">
-                <h2>{{task.header}}</h2>
-                <textarea readonly rows="20" cols="100">{{ task.text }}</textarea>
-                <a href="/download/{{task.id}}"><input type="button" value="Скачать файл"></a>
-            </div>
-
-            <div class="left-bar-task">
-            
-                <select> 
-                    <option disabled selected> Статус </option>
-                    <option>Оценено</option>
-                    <option>Закреплено</option>
-                </select>
-
-                <select>
-                    <option disabled selected>Оценка</option>
-                    <option>2</option>
-                    <option>3</option>
-                    <option>4</option>
-                    <option>5</option>
-                </select>
-            
-                <h5>Отправлено {{task.fromuser}}</h5>
-
-                <input type="button" value="Закрепить">
-            </div>
-            
-            <div class="right-bar-task">
-                <h6 class="task-answer">{{task.answer}}</h6>
-                <textarea cols="65" rows="10" placeholder="Введите сообщение"></textarea>
-                <input type="button" value="Отправить">
-            
-            </div>
->>>>>>> 7a17cc73ea7acc9e85e8714e0fc84bb9377df6b4
         {%else%}
             <meta http-equiv="refresh" content="0;URL=/"/>
         {% endif %}

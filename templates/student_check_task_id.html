@@ -11,7 +11,7 @@
 
             <div class="left-bar-task">
                 {% if task.status == "1" or task.status == "2" or task.status == "3" %}
-                    <input type="button" value="Поднять вверх">
+                    <a href="/student/uptask/{{task.id}}"><input type="button" value="Поднять вверх"></a>
                 {% endif %}
 
                 {% if task.status == "1" or task.status == "2" %}
