@@ -188,29 +188,26 @@ def add_student():
     return render_template('addstudent.html', form=form)
 
 
-@app.route("/teacher/deletestudent", methods=['GET', 'POST'])
+@app.route("/teacher/deletestudent/<studentid>", methods=['GET', 'POST'])
 @login_required
-def delete_student():
-    form = DeleteStudentForm()
-    if form.validate_on_submit():
-        teacherid = str(current_user.id)
-        student = form.studentemail.data
-        user = Users.query.filter_by(email=student).first()
-        if user:
-            info1 = AddStudent.query.filter_by(teacherid=teacherid).first()
-            if info1:
-                info2 = info1.query.filter_by(studentemail=student).first()
-                if info2:
-                    db.session.delete(info2)
-                    db.session.commit()
-                    flash(f'Вы успешно удалили студента {user.name} {user.surname}', 'success')
-                else:
-                    flash('Такой студент у вас не добавлен', 'danger')
+def delete_student(studentid):
+    teacherid = str(current_user.id)
+    user = Users.query.filter_by(id=studentid).first()
+    if user:
+        info1 = AddStudent.query.filter_by(teacherid=teacherid).first()
+        if info1:
+            info2 = info1.query.filter_by(studentid=studentid).first()
+            if info2:
+                db.session.delete(info2)
+                db.session.commit()
+                flash(f'Вы успешно удалили студента {user.name} {user.surname}', 'success')
             else:
-                flash('Вы еще не добавляли студентов','danger')
+                flash('Такой студент у вас не добавлен', 'danger')
         else:
-            flash('Такого студента не существует','danger')
-    return render_template('addstudent.html', form=form)
+            flash('Вы еще не добавляли студентов','danger')
+    else:
+        flash('Такого студента не существует','danger')
+    return render_template('deletestudent.html', )
 
 
 @app.route("/teacher/mystudents")

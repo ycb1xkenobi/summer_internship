@@ -1,5 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;600&display=swap');
-
+.student-buttons {
+  position: absolute;
+  left: -40%;
+  align-items: center;
+  width: 230%;
+  height: 800px;
+}
 
 .student-buttons{
     align-items: center;
@@ -8,11 +14,17 @@
 
 
 .content{
-  position: absolute;
+    position: absolute;
   height: 100%;
   width: 100%;
   margin: auto;
   color: red;
+}
+.test {
+        position: absolute;
+        top: 50%;
+        height: 240px;
+        margin-top: -120px;
 }
 
 .box-center{
@@ -37,10 +49,10 @@
 }
 
 .left-bar div{
-  text-align: center;
-  align-content: space-between;
-  margin-bottom: 100px;
-  transform: translate(0, 50%);
+    text-align: center;
+    align-content: space-between;
+    margin-bottom: 100px;
+    transform: translate(0, 50%);
 }
 
 .left-bar div:not([id="submit-button"]){
@@ -94,10 +106,6 @@ h1, h2, h3, h4, h5, h6 {
 
 .bg-steel {
   background-color: #5f788a;
-}
-
-.form-group textarea{
-  resize: none;
 }
 
 .site-header .navbar-nav .nav-link {
@@ -166,6 +174,15 @@ a.article-title:hover {
 .account-heading {
   font-size: 2.5rem;
 }
+.flash {padding: 10px;}
+.flash.success {
+    border: 1px solid #21DB56;
+    background: #AEFFC5;
+}
+
+.form-group textarea{
+  resize: none;
+}
 
 .student-buttons {
   position: absolute;
@@ -174,10 +191,9 @@ a.article-title:hover {
   width: 230%;
   height: 800px;
 }
-
 .student-buttons input[type="submit"] {
-  width: 45%;
-  height: 85%;
+  width: 23%;
+  height: 22%;
   opacity: 80%;
   margin: 10px;
 }
@@ -186,11 +202,6 @@ a.article-title:hover {
   position: absolute;
   padding-bottom: 50px;
 }
-
-.task-student-list textarea {
-  resize: none;
-}
-
 .left-bar-task{
   position: absolute;
   background-color: white;
