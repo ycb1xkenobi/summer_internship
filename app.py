@@ -162,13 +162,16 @@ def student_check_task_id(task_id):
 @app.route("/student/deletetask/<task_id>")
 @login_required
 def delete_task(task_id):
-    delete_task = Tasks.query.filter_by(id=task_id).first()
-    if current_user.id == int(delete_task.id):
-        db.session.delete(delete_task)
-        db.session.commit()
-        flash('Вы успешно удалили задание', 'success')
-    else:
-        flash('Вы не создавали это задание', 'danger')
+    try:
+        delete_task = Tasks.query.filter_by(id=task_id).first()
+        if current_user.id == int(delete_task.fromuserid):
+            db.session.delete(delete_task)
+            db.session.commit()
+            flash('Вы успешно удалили задание', 'success')
+        else:
+            flash('Вы не создавали это задание', 'danger')
+    except AttributeError:
+        flash('Такого задания не существует', 'danger')
     return render_template('delete_task.html')
 
 @app.route("/account", methods=['GET', 'POST'])
