@@ -137,7 +137,7 @@ def register():
                 if '@' in email:
                     db.session.add(userinfo)
                     db.session.commit()
-                    flash(f'Пароль {non_hashed_password} для пользователя {email}, сменить почту можно только в личном кабинете!', 'success')
+                    flash(f'Пароль {non_hashed_password} для пользователя {email}', 'success')
                 else:
                     flash('Это не почта!', 'danger')
         else:
@@ -159,6 +159,17 @@ def student_check_task_id(task_id):
     checked_task = Tasks.query.filter_by(id=task_id).first()
     return render_template('student_check_task_id.html', task=checked_task, id=str(check_my_id))
 
+@app.route("/student/deletetask/<task_id>")
+@login_required
+def delete_task(task_id):
+    delete_task = Tasks.query.filter_by(id=task_id).first()
+    if current_user.id == int(delete_task.id):
+        db.session.delete(delete_task)
+        db.session.commit()
+        flash('Вы успешно удалили задание', 'success')
+    else:
+        flash('Вы не создавали это задание', 'danger')
+    return render_template('delete_task.html')
 
 @app.route("/account", methods=['GET', 'POST'])
 @login_required
