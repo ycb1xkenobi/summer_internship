@@ -1,121 +1,16 @@
-import sqlalchemy
-from flask import Flask, render_template, url_for, request, redirect, flash, send_file
-from flask_admin import Admin, BaseView, expose, AdminIndexView
+from flask import render_template, url_for, request, redirect, flash, send_file
+from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
-from flask_login import LoginManager, login_user, login_required, logout_user, UserMixin, current_user
-from flask_sqlalchemy import SQLAlchemy
-from flask_wtf import FlaskForm
-from flask_wtf.file import FileField
-from wtforms import PasswordField, StringField, BooleanField, SubmitField
-from wtforms.validators import ValidationError
+from flask_login import login_user, login_required, logout_user, current_user
 from werkzeug.exceptions import RequestEntityTooLarge
 from werkzeug.security import check_password_hash, generate_password_hash
 from io import BytesIO
-
+from forms import LoginForm, AddTask, ChangePassword, Registration, UpdateAccountForm, RegisterPage, DashboardView, Users
+from models import Tasks
 from passwords import create_password
 from save_picture import save_picture
+from __init__ import db, app, manager
 
-app = Flask(__name__)
-app.secret_key = 'ABC123'
-app.config['FLASK_ENV'] = 'development'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['ROLES'] = ['Студент', 'Преподаватель', 'Админ']
-app.config['ALLOWED_EXTENSIONS'] = ['zip', 'rar', 'jpg', 'jpeg' 'png', 'txt']
-app.config['MAX_CONTENT_LENGTH'] = 1 * 1024 * 1024  # 1МБ
-
-db = SQLAlchemy(app)
-manager = LoginManager(app)
-
-
-class Users(db.Model, UserMixin):
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(50), nullable=False, unique=True)
-    password = db.Column(db.String(255), nullable=False)
-    role = db.Column(db.String(20), nullable=False)
-    name = db.Column(db.String(20), nullable=False)
-    surname = db.Column(db.String(20), nullable=False)
-    image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
-    group = db.Column(db.String(100), nullable=False)
-    yearadmission = db.Column(db.String(100), nullable=False)
-
-
-class Tasks(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    header = db.Column(db.String(100), nullable=False)
-    filename = db.Column(db.String)
-    data = db.Column(db.Text)
-    mark = db.Column(db.String(2), nullable=False)
-    status = db.Column(db.String(30), nullable=False)
-    date = db.Column(db.String(30))
-    text = db.Column(db.Text(2000), nullable=False)
-    answer = db.Column(db.Text(1000), nullable=False)
-    fromuser = db.Column(db.String(100), nullable=False)
-    fromuserid = db.Column(db.String(100), nullable=False)
-    touser = db.Column(db.String(100), nullable=False)
-    priority = db.Column(db.Integer, nullable=False)
-
-
-# status 0 - выполненые 1 - бессрочные 2 - срочные 3 - закрепленные 4 - просмотрено(оценено)
-
-class UploadSomething(FlaskForm):
-    submit = SubmitField('Сохранить')
-
-class LoginForm(FlaskForm):
-    email = StringField('Электронная почта')
-    password = PasswordField('Пароль')
-    remember = BooleanField('Запомнить')
-    submit = SubmitField('Войти')
-
-
-class AddTask(FlaskForm):
-    touser_field = StringField('Почта преподавателя')
-    date_field = StringField('Дата конца срока (Если задание со сроком)')
-    header_field = StringField('Заголовок')
-    submit = SubmitField('Отправить')
-
-
-class ChangePassword(FlaskForm):
-    password1 = PasswordField('Введите новый пароль')
-    password2 = PasswordField('Повторите новый пароль')
-    submit = SubmitField('Сохранить')
-
-
-class Registration(FlaskForm):
-    email = StringField('Введите почту')
-    submit = SubmitField('Регистрация')
-
-    def validate_email(self, email):
-        user = Users.query.filter_by(email=email.data).first()
-        if user:
-            raise ValidationError('Эта почта занята')
-
-class UpdateAccountForm(FlaskForm):
-    name = StringField('Имя')
-    surname = StringField('Фамилия')
-    email = StringField('Электронная почта')
-    picture = FileField('Обновить фотографию')
-    group = StringField('Группа')
-    yearadmission = StringField('Год поступления')
-    submit = SubmitField('Обновить')
-
-    def validate_email(self, email):
-        if email.data != current_user.email:
-            user = Users.query.filter_by(email=email.data).first()
-            if user:
-                raise ValidationError('Эта почта занята, выберите другую')
-
-
-class RegisterPage(BaseView):
-    @expose('/')
-    def any_page(self):
-        return render_template('register.html')
-
-
-class DashboardView(AdminIndexView):
-    @expose('/')
-    def index(self):
-        return self.render('admin/dashboard_index.html')
 
 
 @app.route('/')
