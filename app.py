@@ -156,14 +156,11 @@ def teacher_check_task_id(task_id):
     task_id = int(task_id)
     checked_task = Tasks.query.filter_by(id=task_id).first()
     if request.method == 'POST':
-        mark = request.form.get("selectmark")
-        status = request.form.get("selectstatus")
-        answer = request.form.get("answer")
-        checked_task.mark = mark
-        checked_task.status = status
-        checked_task.answer = answer
-        flash('Вы успешно ответили', 'success')
+        checked_task.mark = request.form.get("selectmark")
+        checked_task.status = request.form.get("selectstatus")
+        checked_task.answer = request.form.get("answer")
         db.session.commit()
+        return redirect('/teacher')
     return render_template('teacher_check_task_id.html', task=checked_task)
 
 @app.route("/student/checktask/<task_id>")
