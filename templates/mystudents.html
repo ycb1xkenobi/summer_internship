@@ -5,6 +5,7 @@
         <meta http-equiv="refresh" content="0;URL=/"/>
     {%else%}
         <h1>Мои студенты</h1>
+        <div class="task-student-list">
         {% for student in students %}
             <a href="/account/{{student.studentid}}"><h3>{{student.studentemail}}</h3></a>
             <a href="/teacher/deletestudent/{{student.studentid}}"><input type="button" value="Удалить"</a>
