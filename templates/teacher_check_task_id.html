@@ -7,7 +7,9 @@
                 <div class="task-student-list">
                     <h2>{{task.header}}</h2>
                     <textarea readonly rows="20" cols="100">{{ task.text }}</textarea>
-                    <a href="/download/{{task.id}}"><input type="button" value="Скачать файл"></a>
+                    {% if task.filename != '' %}
+                        <a href="/download/{{task.id}}"><input type="button" value="Скачать файл"></a>
+                    {%endif%}
                 </div>
 
                 <div class="left-bar-task">
